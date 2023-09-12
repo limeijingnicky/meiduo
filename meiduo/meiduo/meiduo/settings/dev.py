@@ -213,7 +213,7 @@ CACHES = {
     }
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "session"  ##普通缓存在default里的0, session缓存在session里的1 完成分库
+SESSION_CACHE_ALIAS = "session"  ##普通缓存在default里的0，session缓存在session里的1 完成分库
 
 
 
