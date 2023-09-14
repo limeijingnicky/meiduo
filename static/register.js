@@ -63,40 +63,47 @@ export default {
         //校验是否勾选
         function check_allow(){
             if(!allow.value){
-                allow.value = false ;
+                allow.value = true ;
             } else {
-                allow.value = true;
+                allow.value = false;
             }
         }
-        //        //监听表单提交事件
-        //            if(!on_submit.value){
-        //                = false ;
-        //            } else {
-        //               = true;
-        //            }
-        //        }
-        return {
-            username,
-            password,
-            password2,
-            mobile,
-            allow,
-            error_name,
-            error_password,
-            error_password2,
-            mobile,
-            allow,
-            error_name,
-            error_password,
-            error_password2,
-            error_mobile,
-            error_allow,
-            error_name_message,
-            error_mobile_message,
-            check_username,
-            check_password,
-            check_password2,
-            check_mobile
+        //监听表单提交事件
+        functon on_submit(){
+            check_username.value();
+            check_password.value();
+            check_password2.value();
+            check_mobile.value();
+            check_allow.value();
+
+            // 前端校验信息，有错误时禁用提交事件
+            if (error_name.value = true || error_password.value=true || error_password2.value=true || error_mobile.value=true || error_allow.value=true ){
+
+                return {
+                    username,
+                    password,
+                    password2,
+                    mobile,
+                    allow,
+                    error_name,
+                    error_password,
+                    error_password2,
+                    mobile,
+                    allow,
+                    error_name,
+                    error_password,
+                    error_password2,
+                    error_mobile,
+                    error_allow,
+                    error_name_message,
+                    error_mobile_message,
+                    check_username,
+                    check_password,
+                    check_password2,
+                    check_mobile
+
+                }
+            }
 
         }
     }

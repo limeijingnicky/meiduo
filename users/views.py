@@ -18,6 +18,15 @@ class RegisterView(View):
         return render(request,'register.html')
 
     def post(self,request):
-        pass
+        ##接收参数,表单数据用POST接收，非表单JSON用body收，然后非序列化
+        value=request.POST.get('key')
 
+
+        ##校验参数
+
+
+        ##保存注册数据
+
+
+        return
 
