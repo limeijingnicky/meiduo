@@ -49,44 +49,44 @@ INSTALLED_APPS = [
 
 
 ]
-
-##对全局的drf框架进行认证的设置
-REST_FRAMEWORK = {
-    ##权限设置
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.BasicAuthentication',  ##基本认证
-        'rest_framework.authentication.SessionAuthentication',  ##session认证
-    ),
-    ##流量设置，用户分类和频次
-    'DEFAULT_THROTTLE_CLASSES': (
-        # 'rest_framework.throttling.AnonRateThrottle',
-        # 'rest_framework.throttling.UserRateThrottle',
-
-        'rest_framework.throttling.ScopedRateThrottle',  # 对不同视图限制访问次数
-    ),
-    'DEFAULT_THROTTLE_RATES': {
-        # 'anon': '1/day', ##匿名用户
-        # 'user': '200/day', ##登录用户 second, minute,hour,day
-
-        # 'bookview': '100000/day'
-    },
-
-    # 过滤filtering
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend'],
-
-    # 分页设置
-    'DEFAULT_PAGINGATION_CLASS': (
-        'django_filters.rest_framework.pagination.PageNumberPagination'),
-    'PAGE_SIZE': 10,  # 设置每页数目
-
-    ##更改异常捕捉方法
-    # 'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler', 默认的方法
-    'EXCEPTION_HANDLER': 'exceptions.exception_handler',
-
-    # api文档设置
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
-}
+#
+# ##对全局的drf框架进行认证的设置
+# REST_FRAMEWORK = {
+#     ##权限设置
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.BasicAuthentication',  ##基本认证
+#         'rest_framework.authentication.SessionAuthentication',  ##session认证
+#     ),
+#     ##流量设置，用户分类和频次
+#     'DEFAULT_THROTTLE_CLASSES': (
+#         # 'rest_framework.throttling.AnonRateThrottle',
+#         # 'rest_framework.throttling.UserRateThrottle',
+#
+#         'rest_framework.throttling.ScopedRateThrottle',  # 对不同视图限制访问次数
+#     ),
+#     'DEFAULT_THROTTLE_RATES': {
+#         # 'anon': '1/day', ##匿名用户
+#         # 'user': '200/day', ##登录用户 second, minute,hour,day
+#
+#         # 'bookview': '100000/day'
+#     },
+#
+#     # 过滤filtering
+#     'DEFAULT_FILTER_BACKENDS': [
+#         'django_filters.rest_framework.DjangoFilterBackend'],
+#
+#     # 分页设置
+#     'DEFAULT_PAGINGATION_CLASS': (
+#         'django_filters.rest_framework.pagination.PageNumberPagination'),
+#     'PAGE_SIZE': 10,  # 设置每页数目
+#
+#     ##更改异常捕捉方法
+#     # 'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler', 默认的方法
+#     'EXCEPTION_HANDLER': 'exceptions.exception_handler',
+#
+#     # api文档设置
+#     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+# }
 
 ##中间键用来监听 请求处理前  和 响应
 ##在请求处理之前从上而下执行，请求处理之后即响应是从下往上执行
@@ -266,3 +266,5 @@ LOGGING = {
 },
 }
 
+##指定自定义的用户模型类，子应用.模型名称
+AUTH_USER_MODEL='users.Users'
