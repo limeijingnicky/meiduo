@@ -5,6 +5,32 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>  <!--导入ajax-->
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <title>美多商城-注册</title>
+ <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .register_con {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: left; /* Center-align the text */
+        }
+
+        .l_con {
+            text-align: left; /* Left-align the text within the .l_con div */
+        }
+
+        .l_con img {
+            max-width: 20%;
+        }
+
+
+    </style>
 
 </head>
 <body>
@@ -62,9 +88,9 @@
                             <label> 同意“美多商城用户使用协议”</label>
                             <span class="error_tip" v-show="error_allow">请勾选用户协议</span>
 
-                            {% if register_error %}
-                            <span class="error_tip">{{ register_error}}</span>
-                            {% endif %}
+<!--                            {% if register_error %}-->
+<!--                            <span class="error_tip">{{ register_error}}</span>-->
+<!--                            {% endif %}-->
 s
                         </li>
                         <li class="reg_sub">
@@ -167,3 +193,4 @@ s
     })
     APP.mount('#app')
 </script>
+

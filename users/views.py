@@ -1,9 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.views import View
 from django.http import HttpResponse,HttpResponseForbidden
 import re
 from users.models import Users
 from django.db import DatabaseError
+from django.urls import reverse
+from django.contrib.auth import login
 
 
 ##设计子接口逻辑，
@@ -60,16 +62,22 @@ class RegisterView(View):
         ##利用models里的用户表单模型进行数据存储,数据库储存错误就重定向到注册页面
 
 
-        try:
-            Users.objects.create_user(username=username,password=password,mobile=mobile)
+        try: #返回一个对象
+            user=Users.objects.create_user(username=username,password=password,mobile=mobile)
         except DatabaseError :
             return  render(request,'register.html',{'register_error': '注册失败'})
 
 
+        ##用户登录状态保持,将用户的信息保存在session里
+        login(request,user)
+
+
         ##响应结果:重定向到首页
-        return HttpResponse("注册成功，重定向成功")
+        # return render(request,template_name='index')
+
+        # return redirect(reverse('content : index')) ##反向解析后得到路由
+        return redirect('/')
 
 
 
-
-
+# python manage.py runserver
