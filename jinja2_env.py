@@ -15,7 +15,7 @@ def environment(**options):
     # 自定义语法
     env.globals.update({
         'url': 'reverse',  ##在模板内做重定向
-        'static': staticfiles_storage.url  ##获取静态文件夹的存储位置
+        # 'static': staticfiles_storage.url  ##获取静态文件夹的存储位置
     })
 
     return env

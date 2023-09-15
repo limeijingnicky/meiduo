@@ -1,6 +1,5 @@
-import { ref } from "vue";
-
-export default {
+const { createApp,ref } = Vue
+    const APP = createApp ({
     setup() {
         // v-model
         let username=ref(" ")
@@ -22,9 +21,9 @@ export default {
         function check_username() {
             // 用户名是5-20个字符，[a-zA-Z0-9_-]
             // 定义正则
-            Let re = /[a-zA-Z0-9_-]{5,20}$/;
+            let  regex0 = /[a-zA-Z0-9_-]{5,20}$/;
             //使用正则匹配用户名数据
-            if (re.test(username.value)){
+            if ( regex0 .test(username.value)){
                 //匹配成功，不展示错误提示信息
                 error_name.value = false;
             } else {
@@ -35,8 +34,8 @@ export default {
         }
         //校验密码
         function check_password(){
-            let re = /[0-9A-Za-Z]{8,20]}$/;
-            if(re.test(password.value)){
+            let regex = /[0-9a-zA-Z]{8,20}$/;
+            if( regex.test(password.value)){
                 error_password.value = false ;
             } else {
                 error_password.value = true;
@@ -52,8 +51,8 @@ export default {
         }
         //校验手机号
         function check_mobile(){
-            let re = /^1[3-9]\d{9}$/;
-            if(re.test(mobile.value)){
+            let  regex1 = /1[0-9]\d{9}$/ ;
+            if( regex1.test(mobile.value)){
                 error_mobile.value = false ;
             } else {
                 error_mobile_message.value = "输入的手机号不正确";
@@ -69,7 +68,7 @@ export default {
             }
         }
         //监听表单提交事件
-        functon on_submit(){
+        function on_submit(){
             check_username.value();
             check_password.value();
             check_password2.value();
@@ -77,34 +76,13 @@ export default {
             check_allow.value();
 
             // 前端校验信息，有错误时禁用提交事件
-            if (error_name.value = true || error_password.value=true || error_password2.value=true || error_mobile.value=true || error_allow.value=true ){
-
-                return {
-                    username,
-                    password,
-                    password2,
-                    mobile,
-                    allow,
-                    error_name,
-                    error_password,
-                    error_password2,
-                    mobile,
-                    allow,
-                    error_name,
-                    error_password,
-                    error_password2,
-                    error_mobile,
-                    error_allow,
-                    error_name_message,
-                    error_mobile_message,
-                    check_username,
-                    check_password,
-                    check_password2,
-                    check_mobile
+            if (error_name.value == true || error_password.value==true || error_password2.value==true ||  error_mobile.value==true ||  error_allow.value==true)
+            {
+               //禁止提交表单事件,默认值为true
+                window.event.returnValue = false ;
 
                 }
             }
-
-        }
     }
-}
+})
+APP.mount('#app')
