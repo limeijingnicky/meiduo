@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users.apps.UsersConfig',
+    'users.apps.UsersConfig', ##用户注册页面
+    'contents.apps.ContentsConfig', ##首页广告页面
+
 
     # 注册过滤模块
     'django_filters',
