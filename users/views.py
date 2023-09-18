@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from django.views import View
-from django.http import HttpResponse,HttpResponseForbidden
+from django.http import HttpResponse,HttpResponseForbidden,JsonResponse
 import re
 from users.models import Users
 from django.db import DatabaseError
@@ -15,7 +15,30 @@ from django.contrib.auth import login
 # 响应数据，响应数据 html json
 
 
-# Create your views here.
+class UsernameCountView(View):
+    def get(self,request,username):
+
+        counts = Users.objects.filter(username=username).count()
+        if counts == 0:
+            return JsonResponse({'code': 0, 'errmsg': 'ok', 'count': counts})
+
+        else:
+            return JsonResponse({'code': 404, 'errmsg': 'error with repeat of id', 'count': counts})
+
+class MobileCountView(View):
+    def get(self,request,mobile):
+        counts = Users.objects.filter(mobile=mobile).count()
+        if counts == 0:
+            return JsonResponse({'code': 0, 'errmsg': 'ok', 'count': counts})
+
+        else:
+            return JsonResponse({'code': 404, 'errmsg': 'error with repeat of mobile', 'count': counts})
+
+
+
+
+
+
 class RegisterView(View):
     #用户注册
     def get(self,request):
@@ -26,7 +49,7 @@ class RegisterView(View):
     def post(self,request):
         ##接收参数,表单数据用POST接收，非表单JSON用body收，然后非序列化
 
-        username =request.POST.get('username')
+        username = request.POST.get('username')
         password = request.POST.get('password')
         password2 = request.POST.get('password2')
         mobile = request.POST.get('mobile')
@@ -63,13 +86,14 @@ class RegisterView(View):
 
 
         try: #返回一个对象
-            user=Users.objects.create_user(username=username,password=password,mobile=mobile)
+            Users.objects.create_user(username=username,password=password,mobile=mobile)
+
         except DatabaseError :
-            return  render(request,'register.html',{'register_error': '注册失败'})
+            return render(request,'register.html',{'register_error': '注册失败'})
 
 
         ##用户登录状态保持,将用户的信息保存在session里
-        login(request,user)
+        # login(request,user)
 
 
         ##响应结果:重定向到首页
