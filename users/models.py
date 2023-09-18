@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 class Users(AbstractUser):
 
+    username = models. CharField(max_length=20,unique=True,verbose_name='用户名')
     mobile = models.CharField(max_length=20,unique=True,verbose_name='手机号')
 
 
