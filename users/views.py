@@ -56,9 +56,10 @@ class RegisterView(View):
         allow = request.POST.get('allow')
 
 
+
         ##校验参数,前后端逻辑相同
         ##判断参数是否齐全；all(【列表】)方法 ,判断数值是否为空，有一个为空，则返回false
-        if not all([username, password,password2,mobile,allow]):
+        if not all([username, password,password2,mobile,allow,uuid]):
             return HttpResponseForbidden('缺少必填项')
 
         # 用户名是否为5-20个字符；
@@ -81,6 +82,7 @@ class RegisterView(View):
             return HttpResponseForbidden('请勾选用户协议')
 
 
+
         ##保存注册数据 (核心代码)
         ##利用models里的用户表单模型进行数据存储,数据库储存错误就重定向到注册页面
 
@@ -94,6 +96,7 @@ class RegisterView(View):
 
         ##用户登录状态保持,将用户的信息保存在session里
         # login(request,user)
+
 
 
         ##响应结果:重定向到首页
