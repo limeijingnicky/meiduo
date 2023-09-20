@@ -50,6 +50,7 @@ def check_code(width=120, height=40, chr_len=4, font_list=ttf_list, font_size=28
 
 if __name__ == '__main__':
     img, code = check_code()
-    # print(code) ##返回验证码文字和图片
+    print(code) ##返回验证码文字和图片
     img.show()
 
+    print(type(img))
