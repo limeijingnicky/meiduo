@@ -51,7 +51,7 @@
                 <a href="login.html">登录</a>
             </div>
             <div class="reg_form clearfix">
-                <form method="post" class="register_form" @on_submit="on_submit" >
+                <form method="post" class="register_form" @on_submit="on_submit">
                     {{csrf_input}}
                     <ul>
                         <li>
@@ -77,9 +77,10 @@
                         </li>
                         <li>
                             <label for="pic_code">图形验证码：</label>
-                            <input type="text" name="image_code" id="pic_code" class="msg_input">
-                              <img :src="img_data" @click = "generate_image_code" alt="这是二维码图片" class="pic_code">
-                            <span class="error_tip">请填写图形验证码</span>
+                            <input type="text" v-model="image_code" @blur="check_image_code" name="image_code"
+                                   id="pic_code" class="msg_input">
+                            <img :src="img_data" @click="generate_image_code" alt="这是二维码图片" class="pic_code">
+                            <span class="error_tip" v-show="error_image_code">[[error_image_code_message]]</span>
                         </li>
                         <li>
                             <label for="msg_code">短信证码：</label>
@@ -140,167 +141,183 @@
 </body>
 
 
-
 <!--引入vue代码-->
 <script>
     const { createApp, ref } = Vue;
 
     const app = createApp({
-    delimiters:['[[',']]'],
-    data() {
-        return {
-            username: "",
-            password: "",
-            password2: "",
-            mobile: "",
-            allow: "",
-            image_code_url:"",
-            uuid:"",
-            img_data:"",
-
-            error_name: false,
-            error_password: false,
-            error_password2: false,
-            error_mobile: false,
-            error_allow: false,
-            error_name_message: "",
-            error_mobile_message: ""
-        };
-    },
-    mounted(){
-        this.generate_image_code();
-    },
-    methods: {
-    generate_image_code(){
-    this.uuid= ppuuid();
-    this.image_code_url='/register/image_codes/'+this.uuid+'/';
-        axios.get(this.image_code_url)
-            .then((response) => {
-            this.img_data ='data:image/png;base64,'+ response.data.img_base64;
-            })
-            .catch((error) => {
-                 console.log(error.response);
-            });
-    },},
-
-    check_username() {
-    // 用户名是5-20个字符，[a-zA-Z0-9_-]
-    // 定义正则
-    let regex0 = /[a-zA-Z0-9_-]{5,20}$/;
-    // 使用正则匹配用户名数据
-    if (regex0.test(this.username)) {
-    // 匹配成功，不展示错误提示信息
-    this.error_name = false;
-    } else {
-    // 匹配失败，展示错误提示信息
-    this.error_name_message = '请输入5-20个字符的用户名';
-    this.error_name = true;
-    }
-
-    // 判断用户是否重复注册
-    if (this.error_name==false){
-    let url='/usernames/'+this.username+'/count/';
-    axios.get(url,{
-    responseType:'json'
-    })
-        .then(response =>{
-    if(response.data.count==1){
-    // 用户名已存在
-    this.error_name_message='用户名已存在';
-    this.error_name = true;
-    }else{
-    // 用户名可用
-    this.error_name = false;
-    }
-    })
-        .catch(error => {
-    console.log(error.response)
-    })
-    }
-    },
-
-    // 校验密码
-    check_password() {
-    let regex = /[0-9a-zA-Z]{8,20}$/;
-    if (regex.test(this.password)) {
-    this.error_password = false;
-    } else {
-    this.error_password = true;
-    }
-    },
-    // 密码确认
-    check_password2() {
-    if (this.password !== this.password2) {
-    this.error_password2 = true;
-    } else {
-    this.error_password2 = false;
-    }
-    },
-    // 校验手机号
-    check_mobile() {
-    let regex1 = /1[0-9]\d{9}$/;
-    if (regex1.test(this.mobile)) {
-    this.error_mobile = false;
-    } else {
-    this.error_mobile_message = "输入的手机号不正确";
-    this.error_mobile = true;
-    }
-    // 判断手机是否重复注册
-    if (this.error_mobile==false){
-    let url='/mobiles/'+this.mobile+'/count/';
-    axios.get(url,{
-    responseType:'json'
-    })
-        .then(response =>{
-    if(response.data.count==1){
-    // 手机已存在
-    this.error_mobile_message='手机已存在';
-    this.error_mobile = true;
-    }else{
-    // 用户名可用
-    this.error_mobile = false;
-    }
-    })
-        .catch(error => {
-    console.log(error.response)
-    })
-    }
-    },
-    // 校验是否勾选
-    check_allow() {
-    if (this.allow) {
-    this.allow = true;
-    } else {
-    this.allow = false;
-    }
-    },
-    // 监听表单提交事件
-    on_submit() {
-    // Run validation checks
-    this.check_username();
-    this.check_password();
-    this.check_password2();
-    this.check_mobile();
-    this.check_allow();
-
-    if (error_name.value == true && error_password.value==true && error_password2.value==true &&
-    error_mobile.value==true && error_allow.value==true){
-    window.event.returnValue = True ;
-    }
+        delimiters:['[[',']]'],
+        data() {
+            return {
+                username: "",
+                password: "",
+                password2: "",
+                mobile: "",
+                allow: "",
+                image_code_url:"",
+                uuid:"",
+                img_data:"",
+                image_code:"",
 
 
-    // // Handle the form submission based on validation results
-    // if (!this.error_name && !this.error_password && !this.error_password2 && !this.error_mobile && !this.error_allow)
-    {
-    // // Form is valid, submit it
-    // console.log("Form submitted successfully!");
-    // } else {
-    // // Form has errors, do not submit
-    // console.log("Form has errors, please fix them.");
-    // }
-    }
-    }
+                error_name: false,
+                error_password: false,
+                error_password2: false,
+                error_mobile: false,
+                error_image_code: false,
+                error_allow: false,
 
+                error_name_message: "",
+                error_mobile_message: "",
+                error_image_code_message: ""
+            };
+        },
+        // 刷新整体页面的时候
+        mounted(){
+            this.generate_image_code();
+        },
+        methods: {
+            generate_image_code(){
+                this.uuid= ppuuid();
+                this.image_code_url='/register/image_codes/'+this.uuid+'/';
+                axios.get(this.image_code_url)
+                    .then((response) => {
+                    this.img_data ='data:image/png;base64,'+ response.data.img_base64;
+                })
+                    .catch((error) => {
+                    console.log(error.response);
+                });
+            },
+
+            check_username() {
+                // 用户名是5-20个字符，[a-zA-Z0-9_-]
+                // 定义正则
+                let regex0 = /[a-zA-Z0-9_-]{5,20}$/;
+                // 使用正则匹配用户名数据
+                if (regex0.test(this.username)) {
+                    // 匹配成功，不展示错误提示信息
+                    this.error_name = false;
+                } else {
+                    // 匹配失败，展示错误提示信息
+                    this.error_name_message = '请输入5-20个字符的用户名';
+                    this.error_name = true;
+                }
+
+                // 判断用户是否重复注册
+                if (this.error_name==false){
+                    let url='/usernames/'+this.username+'/count/';
+                    axios.get(url,{
+                        responseType:'json'
+                    })
+                        .then(response =>{
+                        if(response.data.count==1){
+                            // 用户名已存在
+                            this.error_name_message='用户名已存在';
+                            this.error_name = true;
+                        }else{
+                            // 用户名可用
+                            this.error_name = false;
+                        }
+                    })
+                        .catch(error => {
+                        console.log(error.response)
+                    })
+                }
+            },
+
+            // 校验密码
+            check_password() {
+                let regex = /[0-9a-zA-Z]{8,20}$/;
+                if (regex.test(this.password)) {
+                    this.error_password = false;
+                } else {
+                    this.error_password = true;
+                }
+            },
+            // 密码确认
+            check_password2() {
+                if (this.password !== this.password2) {
+                    this.error_password2 = true;
+                } else {
+                    this.error_password2 = false;
+                }
+            },
+            // 校验手机号
+            check_mobile() {
+                let regex1 = /1[0-9]\d{9}$/;
+                if (regex1.test(this.mobile)) {
+                    this.error_mobile = false;
+                } else {
+                    this.error_mobile_message = "输入的手机号不正确";
+                    this.error_mobile = true;
+                }
+                // 判断手机是否重复注册
+                if (this.error_mobile==false){
+                    let url='/mobiles/'+this.mobile+'/count/';
+                    axios.get(url,{
+                        responseType:'json'
+                    })
+                        .then(response =>{
+                        if(response.data.count==1){
+                            // 手机已存在
+                            this.error_mobile_message='手机已存在';
+                            this.error_mobile = true;
+                        }else{
+                            // 用户名可用
+                            this.error_mobile = false;
+                        }
+                    })
+                        .catch(error => {
+                        console.log(error.response)
+                    })
+                }
+            },
+
+            // 校验图形验证码
+            check_image_code() {
+                if (this.image_code.length !=4 ) {
+                    this.error_image_code_message='请输入图形验证码';
+                    this.error_image_code = true;
+                } else {
+                    this.error_image_code = false;
+                }
+            },
+
+            // 校验是否勾选
+            check_allow() {
+                if (this.allow) {
+                    this.allow = true;
+                } else {
+                    this.allow = false;
+                }
+            },
+            // 监听表单提交事件
+            on_submit() {
+                // Run validation checks
+                this.check_username();
+                this.check_password();
+                this.check_password2();
+                this.check_mobile();
+                this.check_allow();
+
+                if (error_name.value == true && error_password.value==true && error_password2.value==true &&
+                error_mobile.value==true && error_allow.value==true){
+                    window.event.returnValue = True ;
+                }
+
+
+                // // Handle the form submission based on validation results
+                // if (!this.error_name && !this.error_password && !this.error_password2 && !this.error_mobile && !this.error_allow)
+                {
+                    // // Form is valid, submit it
+                    // console.log("Form submitted successfully!");
+                    // } else {
+                    // // Form has errors, do not submit
+                    // console.log("Form has errors, please fix them.");
+                    // }
+                }
+            }
+        }
     });
 
     app.mount("#app");
