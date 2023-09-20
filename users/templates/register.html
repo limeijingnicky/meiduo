@@ -78,7 +78,7 @@
                         <li>
                             <label for="pic_code">图形验证码：</label>
                             <input type="text" name="image_code" id="pic_code" class="msg_input">
-                              <img :src="img_data" @click="generate_image_code" alt="这是二维码图片" class="pic_code">
+                              <img :src="img_data" @click = "generate_image_code" alt="这是二维码图片" class="pic_code">
                             <span class="error_tip">请填写图形验证码</span>
                         </li>
                         <li>
