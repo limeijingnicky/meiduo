@@ -6,7 +6,7 @@ from users.models import Users
 from django.db import DatabaseError
 from django.urls import reverse
 from django.contrib.auth import login
-
+from django_redis import get_redis_connection
 
 ##设计子接口逻辑，
 # 包括请求方法，get post put delete
@@ -53,13 +53,15 @@ class RegisterView(View):
         password = request.POST.get('password')
         password2 = request.POST.get('password2')
         mobile = request.POST.get('mobile')
+        # uuid=request.POST.get('uuid')
+        sms_code = request.POST.get('sms_code')
         allow = request.POST.get('allow')
 
 
 
         ##校验参数,前后端逻辑相同
         ##判断参数是否齐全；all(【列表】)方法 ,判断数值是否为空，有一个为空，则返回false
-        if not all([username, password,password2,mobile,allow,uuid]):
+        if not all([username, password,password2,mobile,allow]):
             return HttpResponseForbidden('缺少必填项')
 
         # 用户名是否为5-20个字符；
@@ -75,8 +77,19 @@ class RegisterView(View):
             return HttpResponseForbidden('两次输入的密码不一致')
 
         # 手机号码是否合法；
-        if not re.match(r'^1[0-9]\d{9}$',mobile):
+        if not re.match(r'^1\d{10}$',mobile):
             return HttpResponseForbidden('请输入正确的手机号码')
+
+        # #添加一个校验短信验证码的逻辑
+        # redis_con = get_redis_connection('verify_code')
+        # sms_code_server = redis_con.get(mobile).decode()
+        # if sms_code_server is None:
+        #     return render(request,'register.html',{'error_sms_code_tip':'短信验证码已失效'})
+        # if sms_code_server != sms_code :
+        #     return render(request, 'register.html', {'error_sms_code_tip':'短信验证码输入有误'})
+
+
+
         # 是否勾选了协议
         if allow != 'on':
             return HttpResponseForbidden('请勾选用户协议')
