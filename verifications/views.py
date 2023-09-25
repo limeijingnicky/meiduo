@@ -61,9 +61,15 @@ class SMSCodeView(View):
         if not all([image_code_client,uuid]):
             return HttpResponseForbidden('缺少必要参数')
 
+        ##判断用户是否频繁发送短信验证
+        redis_con = get_redis_connection('verify_code')
+        sms_code_flag = redis_con.get("{0}_send_flag".format(mobile))
+
+        if sms_code_flag:
+            return JsonResponse({'code':'4004','errmsg':'已发送短信验证码'})
+
         ##提取图形验证码（删除图形验证码），对比图形验证码
         #提取图形验证码
-        redis_con = get_redis_connection('verify_code')
         image_code_server=redis_con.get(uuid)
         if image_code_server is None:
             return JsonResponse({'code':'4001','errmsg':'图形验证码已失效'})
@@ -92,6 +98,11 @@ class SMSCodeView(View):
         #保存短信验证码到数据库redis
         redis_con = get_redis_connection('verify_code')  # 设置一个redis对象
         redis_con.set(mobile, sms_code, ex=60)  ##将value关联到key，key，expires，value(将uuid作为key和验证码文本关联，并加上300s时间)
+
+        #保存一个sent_flag
+        redis_con = get_redis_connection('verify_code')  # 设置一个redis对象
+        redis_con.set(mobile+"_send_flag", 1, ex=60)
+
         #发送短信验证码
         # send_template_sms(mobile,[sms_code],5),1) #调用固定方法和参数
 
@@ -112,4 +123,3 @@ class SMSCheckView(View):
 
         ##响应结果
         return JsonResponse({'code': '1', 'errmsg': sms_code_server.decode()})
-
