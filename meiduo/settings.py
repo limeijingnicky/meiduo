@@ -255,7 +255,7 @@ LOGGING = {
         'level': 'INFO',
         'filters': ['require_debug_true'],
         'class': 'logging.StreamHandler',
-        'formatter': 'simple'
+        'formatter': 'simple',
     },
      'file': {  # 向文件中输出日志
         'level': 'INFO',
@@ -263,14 +263,14 @@ LOGGING = {
         'filename': 'C:/Users/KDG/meiduo/logs/meiduo.log',  # 日志文件的位置
         'maxBytes': 300*1024*1024,
         'backupCount': 10,
-        'formatter': 'verbose'
+        'formatter': 'verbose',
     }
 },
     'loggers': {  # 日志器____
-     'mieduo': {  # 定义了一个名为mieduo的日志器
+     'meiduo': {  # 定义了一个名为meiduo的日志器
         'handlers': ['console','file'], # 可以同时向终据与文件中输出日志
         'propagate': True,  # 是否能续传迷日志信息
-        'Level': 'INFO',  # 日志器接收的最低日志级别
+        'level': 'INFO',  # 日志器接收的最低日志级别
     },
 },
 }
