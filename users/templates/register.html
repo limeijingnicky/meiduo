@@ -84,9 +84,10 @@
                         </li>
                         <li>
                             <label for="msg_code">短信证码：</label>
-                            <input type="text" v-model="sms_code" @blur="check_sms_code" id="msg_code" class="msg_input">
+                            <input type="text" v-model="sms_code" @blur="check_sms_code" id="msg_code"
+                                   class="msg_input">
                             <a @click="send_sms_code" class="get_msg_code">[[ sms_code_tip ]]</a>
-                            <span class="error_tip"  v-show="error_sms_code">[[ error_sms_code_tip ]]</span>
+                            <span class="error_tip" v-show="error_sms_code">[[ error_sms_code_tip ]]</span>
                         </li>
                         <li class="agreement">
                             <input type="checkbox" v-model="allow" @change="check_allow" name="allow" id="allow">
@@ -168,14 +169,13 @@
                 error_mobile: false,
                 error_image_code: false,
                 error_allow: false,
-                error_sms_code:"",
                 send_flag: false,
 
 
                 error_name_message: "",
                 error_mobile_message: "",
                 error_image_code_message: "",
-                error_sms_code:"",
+                error_sms_code:true,
                 error_sms_code_tip:"",
 
             };
@@ -188,15 +188,15 @@
             //发送短信验证码时，同时验证图形码是否正确，以及手机短信验证码是否正确
             send_sms_code(){
                 //防止恶意点击，连续点击，设置一个send_flag，相当于一个控制门
-                if (this.send_flag==true){  //先判断是否已经发出短信
-                return; //短信已经发出，退回去
+                if (this.send_flag===true){ //先判断是否已经发出短信
+                    return; //短信已经发出，退回去
                 }
                 this.send_flag=true; //短信没有发出，可以发送短信的状态
 
                 //校验数据，mobile，image_code
                 this.check_mobile();
                 this.check_image_code();
-                if (this.error_mobile==true || this.error_image_code==true){
+                if (this.error_mobile===true || this.error_image_code===true){
                     this.send_flag=false;
                     return;
                 }
@@ -209,30 +209,30 @@
                     // #因为在view调用时，return了response值 ,里面包含了code。
                     if (response.data.code === '0'){
                         let num=60;
-                        //        倒计时60s(定时器)，可以发送短信
+                        // 倒计时60s(定时器)，可以发送短信
                         let t= setInterval(()=>{
-                            if (num===1 && this.error_sms_code!=false ){
+                            if (num===1){
                                 // 倒计时即将结束,停止回调函数
                                 clearInterval(t);
                                 // 还原sms_code_tip的提示文字
                                 this.sms_code_tip='获取短信验证码';
                                 //重新生成图形验证码
-                                this.generate_image_code();
+                                // this.generate_image_code();
                                 this.send_flag= false;
                             }else{
-                                if (num!=1 && this.error_sms_code==false ){
-                                // 倒计时即将结束,停止回调函数
-                                clearInterval(t);
-                                // 还原sms_code_tip的提示文字
-                                this.sms_code_tip="已完成验证";
-                                //重新生成图形验证码
-                                this.send_flag= false;
+                                if (num!=1 && this.error_sms_code ==false ){
+                                    // 倒计时即将结束,停止回调函数
+                                    clearInterval(t);
+                                    // 还原sms_code_tip的提示文字
+                                    this.sms_code_tip="已完成验证";
+                                    //重新生成图形验证码
+                                    this.send_flag= true;
                                 }else{
-                                    if(num!=1 && this.error_sms_code!=false){
-                                     //正在倒计时
-                                num-=1;
-                                this.sms_code_tip=num+'s';}
-                                   }
+                                    if(num!=1 && this.error_sms_code==true){
+                                        //正在倒计时
+                                        num-=1;
+                                        this.sms_code_tip=num+'s';}
+                                }
 
                             }
                         }, 1000);
@@ -240,8 +240,16 @@
                         if (response.data.code === '4001'){
                             this.error_image_code_message=response.data.errmsg;
                             this.error_image_code=true;
+                        }else{
+
+                            if (response.data.code === '4004'){
+                                this.sms_code_tip=response.data.errmsg;
+                                this.error_sms_code=true;
+
+                            }else{
+                                this.send_flag=false;
+                            }
                         }
-                        this.send_flag=false;
                     }
                 })
                     .catch(error => {
@@ -366,19 +374,19 @@
                 })
                     .then(response => {
                     if (response.data.code=='4002') {
-                    this.error_sms_code_tip=response.data.errmsg;
-                    this.error_sms_code = true;
-                } else {
-                    if (response.data.code=='1'){
-                        if (response.data.errmsg!=this.sms_code){
-                            this.error_sms_code_tip ='请输入正确的短信验证码';
-                            this.error_sms_code = true;
-                        }else{
-                        this.error_sms_code = false;
+                        this.error_sms_code_tip=response.data.errmsg;
+                        this.error_sms_code = true;
+                    } else {
+                        if (response.data.code=='1'){
+                            if (response.data.errmsg!=this.sms_code){
+                                this.error_sms_code_tip ='请输入正确的短信验证码';
+                                this.error_sms_code = true;
+                            }else{
+                                this.error_sms_code = false;
 
+                            }
                         }
                     }
-                }
                 })
                     .catch(error => {
                     console.log(error.response)
@@ -429,4 +437,3 @@
 
 </script>
 </body>
-
