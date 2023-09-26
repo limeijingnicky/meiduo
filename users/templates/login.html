@@ -58,15 +58,12 @@
                         <div></div>
 
 
-                        <div> {{ account_errmsg }} </div>
-
-
                         <label for="password">密码：</label>
                         <input type="password" v-model="password" @blur="check_password" name="password" class="pwd">
                         <div v-show="error_password" class="pwd_error">密码最少为8位，最长为20位</div>
 
 
-                        <div class="user_error"> {{ password_errmsg }} </div>
+                        <div> {{ password_errmsg }} </div>
 
 
                         <div class="more_input clearfix">
