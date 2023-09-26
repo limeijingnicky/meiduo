@@ -8,7 +8,7 @@ from io import BytesIO
 import base64
 import random
 import logging
-
+from celery_tasks.sms.tasks import send_sms_code
 
 
 #创建日志输出器
@@ -103,9 +103,21 @@ class SMSCodeView(View):
         redis_con = get_redis_connection('verify_code')  # 设置一个redis对象
         redis_con.set(mobile+"_send_flag", 1, ex=60)
 
-        #发送短信验证码
+
+        #优化 使用pipeline执行redis，同时执行多个任务，提高服务器的效率
+        # pl=redis_con.pipeline()
+        # pl.set(mobile, sms_code, ex=60)
+        # pl.set(mobile+"_send_flag", 1, ex=60)
+        #
+        # pl.execute()
+
+
+        # 发送短信验证码
         # send_template_sms(mobile,[sms_code],5),1) #调用固定方法和参数
 
+        # 优化 使用celery进行异步执行
+        # send_sms_code.delay(mobile,sms_code)
+        # print('this is celery, it is ok')
 
         ##响应结果
         return JsonResponse({'code':'0','errmsg':'短信发送成功'})
