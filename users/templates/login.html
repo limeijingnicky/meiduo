@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>  <!--导入ajax，进行异步请求，局部刷新数据-->
+    <!--    <script href="../meiduo/users/templates/axios.min.js"></script>-->
+
+    <title>美多商城-登录</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+            margin: 0;
+        }
+
+        .register_con {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: left; /* Center-align the text */
+        }
+
+        .l_con {
+            text-align: left; /* Left-align the text within the .l_con div */
+        }
+
+        .l_con img {
+            max-width: 20%;
+        }
+
+
+    </style>
+
+</head>
+<body>
+<div class="login_top clearfix">
+    <a href="index.html" class="login_logo"><img src=" "></a>
+</div>
+<div class="login_form_bg" id="app">
+    <div class="login_form_wrap clearfix">
+        <div class="login_banner fl"></div>
+        <div class="slogan fl">商品美·种类多·欢迎光临</div>
+        <div class="login form fr">
+            <div class="login_title clearfix">
+                <a href="javascript:；" class="cur">账户登录</a>
+            </div>
+            <div class="form_con">
+                <div class="form_input cur">
+                    <form method="post" class="login-form" @submit="on_submit" v-cloak>
+                        {{ csrf_input }}
+                         <label for="user_name">用户名：</label>
+                        <input type="text" v-model="username" @blur="check_username" name="username" class="user_name">
+                        <div v-show="error_username" class="user_error">请输入正确的用户名</div>
+                        <div></div>
+
+
+                        <div> {{ account_errmsg }} </div>
+
+
+                        <label for="password">密码：</label>
+                        <input type="password" v-model="password" @blur="check_password" name="password" class="pwd">
+                        <div v-show="error_password" class="pwd_error">密码最少为8位，最长为20位</div>
+
+
+                        <div class="user_error"> {{ password_errmsg }} </div>
+
+
+                        <div class="more_input clearfix">
+                            <input type="checkbox" v-model="remembered" name="remembered">
+                            <label>记住登录</label>
+                        </div>
+                        <input type="submit" value="登录" class="input_submit">
+                    </form>
+                </div>
+            </div>
+            <div class="third_party">
+                <a @click="qq_login" class="qq_login">QQ</a>
+                <a href="#" class="weixin_login">微信</a>
+                <a href="register.html" class="register_btn">立即注册</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer no-mp">
+        <div class="foot_link">
+            <a href="#">关于我们</a>
+            <span>|</span>
+            <a href="#">联系我们</a>
+            <span>|</span>
+            <a href="#">招聘人才</a>
+            <span>|</span>
+            <a href="#">友情链接</a>
+        </div>
+        <p>CopyRight@2016 北京美多商业股份有限公司Al1 Rights Reserved</p>
+        <p>电话：010-****888
+            京ICP备＊＊＊＊＊＊＊8号</p>
+    </div>
+
+
+<!--引入vue代码-->
+<script>
+    const { createApp, ref } = Vue;
+
+    const app = createApp({
+        delimiters:['[[',']]'],
+        data() {
+            return {
+                username: "",
+                password: "",
+
+                error_username: false,
+                error_password: false,
+                remembered: false ,
+            };
+        },
+
+        methods: {
+            //检查账号
+            check_username() {
+                // 用户名是5-20个字符，[a-zA-Z0-9_-]
+                // 定义正则
+                let regex0 = /[a-zA-Z0-9_-]{5,20}$/;
+                // 使用正则匹配用户名数据
+                if (regex0.test(this.username)) {
+                    // 匹配成功，不展示错误提示信息
+                    this.error_username = false;
+                } else {
+                    // 匹配失败，展示错误提示信息
+                    this.error_username = true;
+                }
+    },
+
+
+            // 校验密码
+            check_password(){
+                let regex = /[0-9a-zA-Z]{8,20}$/;
+                if (regex.test(this.password)) {
+                    this.error_password = false;
+                } else {
+                    this.error_password = true;
+                }
+            },
+
+
+            // 监听表单提交事件
+            on_submit() {
+                // Run validation checks
+                this.check_username();
+                this.check_password();
+
+
+                if (error_username.value == false && error_password.value==false ){
+                    window.event.returnValue = true ;
+                }
+
+
+                // // Handle the form submission based on validation results
+                // if (!this.error_name && !this.error_password && !this.error_password2 && !this.error_mobile && !this.error_allow)
+                {
+                    // // Form is valid, submit it
+                    // console.log("Form submitted successfully!");
+                    // } else {
+                    // // Form has errors, do not submit
+                    // console.log("Form has errors, please fix them.");
+                    // }
+                }
+            }
+        }
+    });
+
+    app.mount("#app");
+
+</script>
+</body>
+</html>
