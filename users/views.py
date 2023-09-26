@@ -39,13 +39,9 @@ class LoginView(View):
 
         #认证用户
         #在数据库中查询用户名是否存在
-        user = authenticate(username=username)
+        user = authenticate(username=username, password=password)
         if user is None:
-            return render(request,'login.html',{'account_errmsg': '用户名错误'})
-
-        user2 = authenticate(username=username, password=password)
-        if user2 is None:
-            return render(request, 'login.html', {'password_errmsg': '密码错误'})
+            return render(request, 'login.html', {'password_errmsg': '用户名或者密码错误'})
 
 
         #状态保持
