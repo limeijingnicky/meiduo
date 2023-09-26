@@ -5,14 +5,64 @@ import re
 from users.models import Users
 from django.db import DatabaseError
 from django.urls import reverse
-from django.contrib.auth import login
+from django.contrib.auth import login,authenticate
 from django_redis import get_redis_connection
+
 
 ##设计子接口逻辑，
 # 包括请求方法，get post put delete
 # 请求地址，url
 # 请求参数，路径参数，查询字符串，表单，json
 # 响应数据，响应数据 html json
+
+
+class LoginView(View):
+    # 用户登录
+    def get(self,request):
+        return render(request,'login.html')
+
+    def post(self, request):
+        #接收参数
+        username=request.POST.get('username')
+        password=request.POST.get('password')
+        remembered = request.POST.get('remembered')
+
+        #校验参数
+        if not all([username,password]):
+            return HttpResponseForbidden("缺少必传参数")
+
+        if not re.match(r'^[a - zA - Z0 - 9_ -]{5, 20}$',username):
+            return HttpResponseForbidden("用户名不正确")
+
+        if not re.match(r'^[0 - 9a - zA - Z]{8, 20}$', password):
+            return HttpResponseForbidden("密码不正确")
+
+        #认证用户
+        #在数据库中查询用户名是否存在
+        user = authenticate(username=username)
+        if user is None:
+            return render(request,'login.html',{'account_errmsg': '用户名错误'})
+
+        user2 = authenticate(username=username, password=password)
+        if user2 is None:
+            return render(request, 'login.html', {'password_errmsg': '密码错误'})
+
+
+        #状态保持
+        login(request,user)
+        #使用remembered 状态保持周期
+        if remembered !='on':
+            #不进行状态保持
+            request.session.set_expiry(0)
+
+        else:
+            #记住登录：状态保持为1小时
+            request.session.set_expiry(60*60)
+
+
+        #响应结果(重定向到首页)
+        return redirect('/')
+
 
 
 class UsernameCountView(View):
@@ -93,7 +143,6 @@ class RegisterView(View):
         # 是否勾选了协议
         if allow != 'on':
             return HttpResponseForbidden('请勾选用户协议')
-
 
 
         ##保存注册数据 (核心代码)
