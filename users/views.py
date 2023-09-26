@@ -31,10 +31,10 @@ class LoginView(View):
         if not all([username,password]):
             return HttpResponseForbidden("缺少必传参数")
 
-        if not re.match(r'^[a - zA - Z0 - 9_ -]{5, 20}$',username):
+        if not re.match(r'^[a-zA-Z0-9_-]{5,20}$',username):
             return HttpResponseForbidden("用户名不正确")
 
-        if not re.match(r'^[0 - 9a - zA - Z]{8, 20}$', password):
+        if not re.match(r'^[0-9a-zA-Z]{8,20}$', password):
             return HttpResponseForbidden("密码不正确")
 
         #认证用户
