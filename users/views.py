@@ -5,7 +5,7 @@ import re
 from users.models import Users
 from django.db import DatabaseError
 from django.urls import reverse
-from django.contrib.auth import login,authenticate
+from django.contrib.auth import login,authenticate,logout
 from django_redis import get_redis_connection
 
 
@@ -14,6 +14,19 @@ from django_redis import get_redis_connection
 # 请求地址，url
 # 请求参数，路径参数，查询字符串，表单，json
 # 响应数据，响应数据 html json
+
+
+class UserinfoView(View):
+    #用户中心
+    pass
+
+class LogoutView(View):
+    #用户退出登录
+    def get(self,request):
+        logout(request)
+        response = redirect('/')
+        response.delete_cookie('username')
+        return response
 
 
 class LoginView(View):
@@ -55,9 +68,14 @@ class LoginView(View):
             #记住登录：状态保持为1小时
             request.session.set_expiry(60*60)
 
+        response=redirect('/')
+
+        #为了在首页显示用户名等登录信息，需要将用户名缓存到cookie中
+        response.set_cookie('username',user.username,max_age=60*60)
+
 
         #响应结果(重定向到首页)
-        return redirect('/')
+        return response
 
 
 
@@ -146,23 +164,25 @@ class RegisterView(View):
 
 
         try: #返回一个对象
-            Users.objects.create_user(username=username,password=password,mobile=mobile)
+            user=Users.objects.create_user(username=username,password=password,mobile=mobile)
 
         except DatabaseError :
             return render(request,'register.html',{'register_error': '注册失败'})
 
 
         ##用户登录状态保持,将用户的信息保存在session里
-        # login(request,user)
+        login(request,user)
 
+        response = redirect('/')
 
+        # 为了在首页显示用户名等登录信息，需要将用户名缓存到cookie中
+        response.set_cookie('username', user.username, max_age=60 * 60)
 
         ##响应结果:重定向到首页
         # return render(request,template_name='index')
 
         # return redirect(reverse('content : index')) ##反向解析后得到路由
-        return redirect('/')
-
+        return response
 
 
 # python manage.py runserver
