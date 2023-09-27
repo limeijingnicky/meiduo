@@ -8,7 +8,7 @@ from users.models import Users
 def get_user_by_account(account):
     # 校验username是用户名还是手机号码
     try:
-        if not re.match(r'^1\d{10}$', account):
+        if re.match(r'^1\d{10}$', account):
             ##输入值为手机号
             user = Users.objects.get(mobile=account)
         else:
@@ -31,8 +31,7 @@ class UsernameMobileBackend(ModelBackend):
         if user and user.check_password(password):
             #返回user
             return user
-        else:
-            return None
+        return None
 
 
 
