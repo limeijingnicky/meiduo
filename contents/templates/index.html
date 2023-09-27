@@ -3,36 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <title>商品首页</title>
-<!--    <link rel="stylesheet" type="text/css" href="templates/index.css">-->
+    <!--    <link rel="stylesheet" type="text/css" href="templates/index.css">-->
 
     <style>
         body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
         }
 
         .container {
-        text-align: center;
+            text-align: center;
         }
 
         .product {
-        text-align: center;
-        margin: 20px;
+            text-align: center;
+            margin: 20px;
         }
 
         .product img {
 
-        display: block;
-        margin: 0 auto;
+            display: block;
+            margin: 0 auto;
         }
     </style>
 
 </head>
 <body>
+<div id="app">
+    <div class="header_con">
+        <div class="header">
+            <div class="welcome fl">欢迎来到美多商城!</div>
+            <div class="fr">
+
+                <!--                jinja2的写法-->
+                <!--                {% if user.is_authenticated %}-->
+                <!--                    <div class="login_info fl">-->
+                <!--                        欢迎您：<em>{{ user.username }}</em>-->
+                <!--                        <a href="javascript:；" class="quit">退出</a>-->
+                <!--                    </div>-->
+
+                <!--                {% else %}-->
+                <!--                    <div class="login_btn fl">-->
+                <!--                    <a href="/login">登录</a>-->
+                <!--                    <span>|</span>-->
+                <!--                    <a href="/register">注册</a>-->
+                <!--                    </div>-->
+                <!--                {% endif %}-->
+
+                <div v-if="username" class="login_info fl">
+                    欢迎您：<em>[[ username ]]</em>
+                    <a href="/logout/" class="quit">退出</a>
+                </div>
+                <div v-else class="login_btn fl">
+                    <a href="/login">登录</a>
+                    <span>|</span>
+                    <a href="/register">注册</a>
+                </div>
+
+
+                <div class="user_link fl">
+                    <span>|</span>
+                    <a href="user_center_info.html">用户中心</a>
+                    <span>|</span>
+                    <a href="/cart">我的购物车</a>
+                    <span>|</span>
+                    <a href="user_center_order.html">我的订单</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="container">
         <div class="product">
             <img src="../static/product1.jpeg" alt="产品1">
@@ -50,5 +97,69 @@
         </div>
         <!-- 在这里添加更多产品 -->
     </div>
+
+
+    <script>
+        //提取cookie
+        function getCookie(name){
+            let r= document.cookie.match('\\b'+name+'=([^;]*)\\b')
+            return r ? r[1]:undefined;
+        }
+
+    </script>
+
+
+
+    <script>
+
+        const { createApp, ref } = Vue ;
+
+        const app = createApp({
+            delimiters:['[[',']]'],
+            data() {
+                return {
+                    username:getCookie('username'),
+                    f1_tab:1, //标签页控制
+                    f2_tab:1,
+                    f3_tab:1,
+
+                    //渲染购物车数据
+                    cart_total_count:0,
+                    carts:[],
+                };
+            },
+
+            methods: {
+                //获取购物车数据
+                get_carts(){
+                    let url = '/carts/simple/';
+                    axios.get(url, {
+                        responseType: 'json',
+                    })
+                        .then(response => {
+                        this.carts = response.data.cart_skus;
+                        this.cart_total_count = 0;
+                        for(let i=0;i<this.carts.length;i++){
+                            if (this.carts[i].name.Length>25){
+                                this.carts[i].name = this.carts[i].name.substring(0,25)+'...';
+                            }
+                            this.cart_total_count += this.carts[i].count;
+                        }
+                    })
+                        .catch(error => {
+                        console.log(error.response);
+                    })
+                },
+
+
+
+            }
+        });
+
+        app.mount("#app");
+
+    </script>
+
+
 </body>
 </html>
