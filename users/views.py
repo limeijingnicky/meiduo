@@ -7,7 +7,7 @@ from django.db import DatabaseError
 from django.urls import reverse
 from django.contrib.auth import login,authenticate,logout
 from django_redis import get_redis_connection
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 ##设计子接口逻辑，
 # 包括请求方法，get post put delete
@@ -16,9 +16,26 @@ from django_redis import get_redis_connection
 # 响应数据，响应数据 html json
 
 
-class UserinfoView(View):
+class UserinfoView(LoginRequiredMixin,View):
     #用户中心
-    pass
+    def get(self,request):
+        # if request.user.is_authenticated:
+        #     return render(request,'user_center_info.html')
+        # else:
+        #     return redirect('/login')
+        # login_url='/login'
+        return render(request,'user_center_info.html')
+
+class UserCartView(LoginRequiredMixin,View):
+    ##购物车
+    def get(self,request):
+        return render(request,'cart.html')
+
+
+class UserOrderView(LoginRequiredMixin, View):
+    ##用户订单
+    def get(self, request):
+        return render(request, 'user_center_order.html')
 
 class LogoutView(View):
     #用户退出登录
@@ -68,13 +85,20 @@ class LoginView(View):
             #记住登录：状态保持为1小时
             request.session.set_expiry(60*60)
 
-        response=redirect('/')
+        #先取出next
+        next=request.GET.get('next')
+        #如果next存在则重定向到之前页面
+        if next:
+            response=redirect(next)
+        #如果next不存在，则重定向到首页
+        else:
+            response=redirect('/')
 
         #为了在首页显示用户名等登录信息，需要将用户名缓存到cookie中
         response.set_cookie('username',user.username,max_age=60*60)
 
 
-        #响应结果(重定向到首页)
+        #响应结果(重定向到之前页面)
         return response
 
 

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心</title>
+    <style>
+        /* 样式可以根据需要进行自定义 */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #sidebar {
+            width: 200px;
+            background-color: #fff;
+            color: #fff;
+            padding: 20px;
+            float: left;
+        }
+
+        #content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button.cancel {
+            background-color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h1>用户中心</h1>
+        <ul>
+            <li><a href="#">个人信息</a></li>
+            <li><a href="#">收货地址</a></li>
+            <li><a href="#">全部订单</a></li>
+            <li><a href="#">修改密码</a></li>
+        </ul>
+    </div>
+    <div id="content">
+        <h1>个人信息</h1>
+        <form>
+            <div class="form-group">
+                <label for="username">用户名:</label>
+                <input type="text" id="username" name="username">
+            </div>
+            <div class="form-group">
+                <label for="contact">联系方式:</label>
+                <input type="text" id="contact" name="contact">
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email">
+            </div>
+            <button type="submit">保存</button>
+            <button type="button" class="cancel">取消</button>
+        </form>
+        <h1>最近浏览内容</h1>
+        <!-- 这里可以添加最近浏览内容的列表或其他信息 -->
+    </div>
+</body>
+</html>

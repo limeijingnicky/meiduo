@@ -281,3 +281,7 @@ AUTH_USER_MODEL = 'users.Users'
 
 ##指定自定义用户认证后端
 AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileBackend']
+
+##配置未登录用户的重定向页面
+LOGIN_URL='/login'
+
