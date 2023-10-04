@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购物车</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #cart {
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+
+        .cart-actions {
+            text-align: right;
+        }
+
+        .total-price {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>购物车</h1>
+    </header>
+    <div id="cart">
+        <table>
+            <thead>
+                <tr>
+                    <th>商品名称</th>
+                    <th>价格</th>
+                    <th>数量</th>
+                    <th>小计</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>商品 1</td>
+                    <td>$10.00</td>
+                    <td><input type="number" value="1" min="1"></td>
+                    <td>$10.00</td>
+                    <td><button>删除</button></td>
+                </tr>
+                <tr>
+                    <td>商品 2</td>
+                    <td>$15.00</td>
+                    <td><input type="number" value="2" min="1"></td>
+                    <td>$30.00</td>
+                    <td><button>删除</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="cart-actions">
+            <p class="total-price">总价: $40.00</p>
+            <button>结算</button>
+        </div>
+    </div>
+</body>
+</html>
