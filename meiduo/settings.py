@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users.apps.UsersConfig', ##用户注册页面
     'contents.apps.ContentsConfig', ##首页广告页面
-
+    'oauth.apps.OauthConfig',
 
     # 注册过滤模块
     'django_filters',
@@ -49,8 +49,8 @@ INSTALLED_APPS = [
     # 注册restframework
     'rest_framework',
 
-
 ]
+
 #
 # ##对全局的drf框架进行认证的设置
 # REST_FRAMEWORK = {
@@ -282,6 +282,12 @@ AUTH_USER_MODEL = 'users.Users'
 ##指定自定义用户认证后端
 AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileBackend']
 
+
 ##配置未登录用户的重定向页面
 LOGIN_URL='/login'
 
+
+# Q0登录的配置参数,申请应用的时候生成
+QO_CLIENT_ID = '101518219'
+QQ_CLIENT_SECRET = '418d84ebdc7241efb79536886ae95224'
+Q0_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'

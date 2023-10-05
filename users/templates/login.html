@@ -46,13 +46,13 @@
         <div class="slogan fl">商品美·种类多·欢迎光临</div>
         <div class="login form fr">
             <div class="login_title clearfix">
-                <a href="javascript:；" class="cur">账户登录</a>
+                <a class="cur">账户登录</a>
             </div>
             <div class="form_con">
                 <div class="form_input cur">
                     <form method="post" class="login-form" @submit="on_submit" v-cloak>
                         {{ csrf_input }}
-                         <label for="user_name">用户名：</label>
+                        <label for="user_name">用户名：</label>
                         <input type="text" v-model="username" @blur="check_username" name="username" class="user_name">
                         <div v-show="error_username" class="user_error">请输入正确的用户名</div>
                         <div></div>
@@ -63,7 +63,7 @@
                         <div v-show="error_password" class="pwd_error">密码最少为8位，最长为20位</div>
 
 
-                        <div> {{ password_errmsg }} </div>
+                        <div> {{ password_errmsg }}</div>
 
 
                         <div class="more_input clearfix">
@@ -75,7 +75,7 @@
                 </div>
             </div>
             <div class="third_party">
-                <a href="qq_login" class="qq_login">QQ</a>
+                <a @click="qq_login" class="qq_login">QQ</a>
                 <a href="#" class="weixin_login">微信</a>
                 <a href="register.html" class="register_btn">立即注册</a>
             </div>
@@ -96,80 +96,101 @@
             京ICP备＊＊＊＊＊＊＊8号</p>
     </div>
 
+    <script>
+        function get_query_string(parameter_name) {
+            // 获取当前页面的URL
+            var url = window.location.href;
 
-<!--引入vue代码-->
-<script>
-    const { createApp, ref } = Vue;
+            // 使用正则表达式匹配URL中的查询参数部分
+            var parameter_regex = new RegExp('[?&]' + parameter_name + '=([^&#]*)');
 
-    const app = createApp({
-        delimiters:['[[',']]'],
-        data() {
-            return {
-                username: "",
-                password: "",
+            // 使用exec方法从URL中提取参数值
+            var match = parameter_regex.exec(url);
 
-                error_username: false,
-                error_password: false,
-                remembered: false ,
-            };
-        },
-
-        methods: {
-            //检查账号
-            check_username() {
-                // 用户名是5-20个字符，[a-zA-Z0-9_-]
-                // 定义正则
-                let regex0 = /[a-zA-Z0-9_-]{5,20}$/;
-                // 使用正则匹配用户名数据
-                if (regex0.test(this.username)) {
-                    // 匹配成功，不展示错误提示信息
-                    this.error_username = false;
-                } else {
-                    // 匹配失败，展示错误提示信息
-                    this.error_username = true;
-                }
-    },
-
-
-            // 校验密码
-            check_password(){
-                let regex = /[0-9a-zA-Z]{8,20}$/;
-                if (regex.test(this.password)) {
-                    this.error_password = false;
-                } else {
-                    this.error_password = true;
-                }
-            },
-
-
-            // 监听表单提交事件
-            on_submit() {
-                // Run validation checks
-                this.check_username();
-                this.check_password();
-
-
-                if (error_username.value == false && error_password.value==false ){
-                    window.event.returnValue = true ;
-                }
-
-
-                // // Handle the form submission based on validation results
-                // if (!this.error_name && !this.error_password && !this.error_password2 && !this.error_mobile && !this.error_allow)
-                {
-                    // // Form is valid, submit it
-                    // console.log("Form submitted successfully!");
-                    // } else {
-                    // // Form has errors, do not submit
-                    // console.log("Form has errors, please fix them.");
-                    // }
-                }
+            // 如果找到匹配的参数，返回参数值，否则返回null
+            if (match !== null) {
+                return decodeURIComponent(match[1]);
+            } else {
+                return null;
             }
         }
-    });
 
-    app.mount("#app");
+    </script>
 
-</script>
+    <!--引入vue代码-->
+    <script>
+        const { createApp, ref } = Vue;
+
+        const app = createApp({
+            delimiters:['[[',']]'],
+            data() {
+                return {
+                    username: "",
+                    password: "",
+
+                    error_username: false,
+                    error_password: false,
+                    remembered: false ,
+                };
+            },
+
+            methods: {
+                //检查账号
+                check_username() {
+                    // 用户名是5-20个字符，[a-zA-Z0-9_-]
+                    // 定义正则
+                    let regex0 = /[a-zA-Z0-9_-]{5,20}$/;
+                    // 使用正则匹配用户名数据
+                    if (regex0.test(this.username)) {
+                        // 匹配成功，不展示错误提示信息
+                        this.error_username = false;
+                    } else {
+                        // 匹配失败，展示错误提示信息
+                        this.error_username = true;
+                    }
+                },
+
+
+                // 校验密码
+                check_password(){
+                    let regex = /[0-9a-zA-Z]{8,20}$/;
+                    if (regex.test(this.password)) {
+                        this.error_password = false;
+                    } else {
+                        this.error_password = true;
+                    }
+                },
+
+
+                // 监听表单提交事件
+                on_submit() {
+                    // Run validation checks
+                    this.check_username();
+                    this.check_password();
+
+
+                    if (error_username.value == false && error_password.value==false ){
+                        window.event.returnValue = true ;
+                    }
+                },
+                //qq登录
+                qq_login() {
+                    let next = get_query_string('next') || '/';
+                    let url = '/qq/login/?next=' + next;
+                    axios.get(url, { responseType: 'json' })
+                        .then(response => {
+                        location.href = response.data.login_url;
+                    })
+                        .catch(error => {
+                        console.log(error.response);
+                    })
+                }
+
+            }
+        });
+
+        app.mount("#app");
+
+    </script>
 </body>
 </html>

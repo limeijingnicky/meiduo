@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.contrib.auth import login,authenticate,logout
 from django_redis import get_redis_connection
 from django.contrib.auth.mixins import LoginRequiredMixin
+from QQLoginTool import QQtool
+
 
 ##设计子接口逻辑，
 # 包括请求方法，get post put delete
@@ -26,10 +28,13 @@ class UserinfoView(LoginRequiredMixin,View):
         # login_url='/login'
         return render(request,'user_center_info.html')
 
+
+
 class UserCartView(LoginRequiredMixin,View):
     ##购物车
     def get(self,request):
         return render(request,'cart.html')
+
 
 
 class UserOrderView(LoginRequiredMixin, View):
