@@ -2,6 +2,7 @@
 from django.contrib.auth.backends import ModelBackend
 import re
 from users.models import Users
+from django.db import models
 
 
 
@@ -33,5 +34,11 @@ class UsernameMobileBackend(ModelBackend):
             return user
         return None
 
+class BaseModel(models.Model):
+    create_time=models.DateTimeField(auto_now_add=True,verbose_name="创建时间")
+    updata_time=models.DateTimeField(auto_now=True,verbose_name="更新时间")
+
+    class Meta:
+        abstract=True #抽象类，用于继承用，不会单独创建表
 
 
