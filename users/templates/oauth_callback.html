@@ -8,7 +8,7 @@
     <!--    <script href="../meiduo/users/templates/axios.min.js"></script>-->
 
     <title>美多商城-绑定</title>
-<style>
+    <style>
         body {
             display: flex;
             justify-content: center;
@@ -33,7 +33,7 @@
         }
 
 
-</style>
+    </style>
 </head>
 <body>
 <div id="app">
@@ -50,7 +50,7 @@
                 <a href="login.html">登录</a>
             </div>
             <div class="reg_form clearfix">
-                <form method="post" class="register_form" @on_submit="on_submit">
+                <form method="post" class="reg_form" @submit="on_submit">
                     {{csrf_input}}
                     <ul>
                         <li>
@@ -73,24 +73,24 @@
                         </li>
                         <li>
                             <label for="msg_code">短信验证码：</label>
-                            <input type="text" v-model="sms_code" @blur="check_sms_code" id="msg_code"
+                            <input type="text" v-model="sms_code" @blur="check_sms_code" name="sms_code" id="msg_code"
                                    class="msg_input">
                             <a @click="send_sms_code" class="get_msg_code">[[ sms_code_tip ]]</a>
                             <span class="error_tip" v-show="error_sms_code">[[ error_sms_code_tip ]]</span>
-                        {% if sms_code_errmsg %}
+                            <div></div>
+                            <div></div>
+
                             <span class="error_tip">{{sms_code_errmsg}}</span>
-                        {% endif %}
-                         {% if openid_errmsg %}
+
                             <span class="error_tip">{{openid_errmsg}}</span>
-                        {% endif %}
-                         {% if qq_login_errmsg %}
+
                             <span class="error_tip">{{qq_login_errmsg}}</span>
-                        {% endif %}
+
                         </li>
-                        <input type="hidden" name="access_token_openid" value="{{openid}}">
+                        <input type="hidden" name="openid" value="{{openid}}">
 
                         <li class="reg_sub">
-                            <button type="submit">保存</button>
+                            <input type="submit" value="保存" name="">
                         </li>
                     </ul>
                 </form>
@@ -134,7 +134,6 @@
 </script>
 
 
-
 <!--引入vue代码-->
 <script>
     const { createApp, ref } = Vue;
@@ -151,6 +150,8 @@
                 image_code:"",
                 sms_code_tip:"获取短信验证码",
                 sms_code:"",
+                openid:"",
+
 
                 error_mobile: false,
                 error_password: false,
@@ -167,6 +168,10 @@
         // 刷新整体页面的时候
         mounted(){
             this.generate_image_code();
+            //            const openidElement = document.querySelector('input[name="access_token_openid"]');
+            //            if (openidElement) {
+            //                this.openid = openidElement.value;
+            //            }
         },
         methods: {
             //发送短信验证码时，同时验证图形码是否正确，以及手机短信验证码是否正确
@@ -242,6 +247,7 @@
                 });
             },
 
+
             generate_image_code(){
                 this.uuid= ppuuid();
                 this.image_code_url='/register/image_codes/'+this.uuid+'/';
@@ -260,7 +266,12 @@
                 let regex1 = /1\d{10}$/;
                 if (regex1.test(this.mobile)) {
                     this.error_mobile = false;
-              // 判断手机是否存在
+                }else {
+                    this.error_mobile_message = "输入的手机号不正确";
+                    this.error_mobile = true;
+                }
+
+                // 判断手机是否存在
                 if (this.error_mobile==false){
                     let url='/mobiles/'+this.mobile+'/count/';
                     axios.get(url,{
@@ -269,10 +280,11 @@
                         .then(response =>{
                         if(response.data.count==1){
                             // 手机存在
-                            this.error_mobile = false;
+                            this.error_mobile_message='已注册用户';
+                            this.error_mobile = true;
                         }else{
                             // 手机号不存在
-                            this.error_mobile_message='手机不存在';
+                            this.error_mobile_message='新手机用户';
                             this.error_mobile = true;
                         }
                     })
@@ -281,10 +293,6 @@
                     })
                 }
 
-                } else {
-                    this.error_mobile_message = "输入的手机号不正确";
-                    this.error_mobile = true;
-                }
 
             },
 
@@ -298,7 +306,7 @@
                 }
             },
 
-             // 校验图形验证码
+            // 校验图形验证码
             check_image_code() {
                 if (this.image_code.length !=4 ) {
                     this.error_image_code_message='请输入图形验证码';
@@ -321,7 +329,7 @@
                     } else {
                         if (response.data.code=='1'){
                             if (response.data.errmsg!=this.sms_code){
-                                this.error_sms_code_tip ='请输入正确的短信验证码';
+                                this.error_sms_code_tip ='输入正确的短信验证码';
                                 this.error_sms_code = true;
                             }else{
                                 this.error_sms_code = false;
@@ -344,13 +352,15 @@
                 this.check_sms_code();
 
 
-                if (error_mobile.value==false && error_password.value==false && error_sms_code==false){
+                if (this.error_mobile.value===true && this.error_password.value===false && this.error_image_code===false && this.error_sms_code===false){
+
                     window.event.returnValue = true ;
-                }
 
 
                 }
+
             }
+        }
 
     });
 

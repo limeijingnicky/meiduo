@@ -415,8 +415,8 @@
                 this.check_sms_code();
 
 
-                if (error_name.value == false && error_password.value==false && error_password2.value==false &&
-                error_mobile.value==false && error_allow.value==false&& error_sms_code==false){
+                if (this.error_name.value == false && this.error_password.value==false && this.error_password2.value==false &&
+                this.error_mobile.value==false && this.error_allow.value==false&& this.error_sms_code==false){
                     window.event.returnValue = true ;
                 }
 
@@ -437,5 +437,7 @@
 
     app.mount("#app");
 
+
 </script>
 </body>
+</html>
