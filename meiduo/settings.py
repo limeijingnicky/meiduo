@@ -16,6 +16,7 @@ from pathlib import Path
 import os
 import logging
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -47,7 +48,7 @@ INSTALLED_APPS = [
     'django_filters',
 
     # 注册restframework
-    'rest_framework',
+    # 'rest_framework',
 
 ]
 
@@ -291,3 +292,20 @@ LOGIN_URL='/login'
 QO_CLIENT_ID = '101518219'
 QQ_CLIENT_SECRET = '418d84ebdc7241efb79536886ae95224'
 Q0_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'
+
+
+#配置email参数
+EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'#导入邮件模块
+EMAIL_HOST='smtp.gmail.com'#发邮件主机
+EMAIL_PORT=587 #发邮件端口
+EMAIL_USE_TLS = True  # 使用 TLS 安全连接
+
+EMAIL_HOST_USER='limeijingnicky@gmail.com'#授权的邮箱
+EMAIL_HOST_PASSWORD='kayqyillldnqgxqh'#邮箱授权时获得的密码,非注册登录密码
+EMAIL_FROM ='美多商城' #发件人抬头
+
+EMAIL_VERIFY_URL='http://127.0.0.1:8000/verification/'
+
+
+
+

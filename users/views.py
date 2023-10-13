@@ -9,13 +9,116 @@ from django.contrib.auth import login,authenticate,logout
 from django_redis import get_redis_connection
 from django.contrib.auth.mixins import LoginRequiredMixin
 from QQLoginTool import QQtool
-
+import json
+import logging
+from celery_tasks.email.tasks import send_verify_email
+from itsdangerous import URLSafeSerializer
+from itsdangerous import BadSignature
+from django.conf import settings
 
 ##设计子接口逻辑，
 # 包括请求方法，get post put delete
 # 请求地址，url
 # 请求参数，路径参数，查询字符串，表单，json
 # 响应数据，响应数据 html json
+
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+class LoginRequiredJSONMixin(LoginRequiredMixin):
+  # 重写handle_no_permission方法，直接传出一个jsonresponse
+    def handle_no_permission(self):
+        # 响应json数据
+        return JsonResponse({'code':'406','errmsg':'用户未登录'})
+
+#设置一个激活链接
+def generate_varify_email_url(user):
+    # 生成秘钥
+    secret_key = 'varify_email_url_key'  # 越复杂越安全
+    serializer = URLSafeSerializer(secret_key)
+
+    # 生成签名令牌
+    data = {'username': user.username, 'email': user.email}
+    token = serializer.dumps(data)
+
+    return settings.EMAIL_VERIFY_URL + '?token='+token
+
+
+def check_varify_email_url(token):
+    secret_key = 'varify_email_url_key'  # 越复杂越安全
+    serializer = URLSafeSerializer(secret_key)
+
+    try:
+        data = serializer.loads(token)
+    except BadSignature:
+        return None
+    else:
+        username=data['username']
+        email=data['email']
+        try:
+            user=Users.objects.get(username=username,email=email)
+        except Users.DoseNotExist:
+            return None
+        else:
+            return user
+
+
+
+class VerifyEmailView(View):
+    def get(self,request):
+        token = request.GET.get('token')
+
+        if not token:
+            return HttpResponseForbidden('没有token')
+
+        user = check_varify_email_url(token)
+        if not user:
+            return HttpResponseForbidden('token无效')
+
+        try:
+            user.email_active=True
+            user.save()
+        except Exception as e:
+            # logger.error(e)
+            return HttpResponseForbidden('邮箱激活失败')
+        else:
+            return redirect('/info/')
+
+
+
+class EmailView(LoginRequiredJSONMixin,View):
+    #添加邮箱
+    def put(self,request):
+        json_str=request.body.decode()
+        json_dic=json.loads(json_str)
+        email=json_dic.get('email')
+
+        # 校验邮箱地址
+        if not re.match(r'^\w+@\w+\.\w+$',email):
+            return HttpResponseForbidden('email格式不正确')
+        try:
+            request.user.email = email
+            request.user.save()
+        except Exception as e:
+            return JsonResponse({'code':405,'errmsg':'添加邮箱失败'})
+
+        # #发送邮箱验证邮件
+        verify_url=generate_varify_email_url(request.user)
+        message='这是纯文本邮件内容'
+        send_verify_email.delay(email,verify_url,message)
+
+        #
+        # subject = "美多商城邮箱验证"
+        # html_message = '<p>尊敬的用户您好！<p>' \
+        #                '<p>感谢您使用美多商城。 <p> ' \
+        #                '<p>您的邮箱为：%s。请点击此链接激活您的邮箱：<p> ' \
+        #                '<p> <a href="%s">%s<a></p>' % (email, verify_url, verify_url)
+        #
+        # send_mail(subject=subject, message=message, from_email=settings.EMAIL_HOST_USER, recipient_list=[email],
+        #           html_message=html_message)
+
+
+
+        return JsonResponse({'code':0,'errmsg':'ok'})
 
 
 class UserinfoView(LoginRequiredMixin,View):
@@ -26,7 +129,13 @@ class UserinfoView(LoginRequiredMixin,View):
         # else:
         #     return redirect('/login')
         # login_url='/login'
-        return render(request,'user_center_info.html')
+        context={
+            'username':  request.user.username,
+            'mobile': request.user.mobile,
+            'email': request.user.email,
+            'email_active': request.user.email_active
+        }
+        return render(request,'user_center_info.html',context)
 
 
 
@@ -71,6 +180,7 @@ class LoginView(View):
 
         if not re.match(r'^[0-9a-zA-Z]{8,20}$', password):
             return HttpResponseForbidden("密码不正确")
+
 
         #认证用户
         #在数据库中查询用户名是否存在
@@ -214,4 +324,5 @@ class RegisterView(View):
         return response
 
 
-# python manage.py runserver
+
+

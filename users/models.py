@@ -7,6 +7,7 @@ class Users(AbstractUser):
 
     username = models. CharField(max_length=20,unique=True,verbose_name='用户名')
     mobile = models.CharField(max_length=20,unique=True,verbose_name='手机号')
+    email_active=models.BooleanField(default=False,verbose_name="邮箱验证状态") #追加一个字段
 
 
     class Meta:
