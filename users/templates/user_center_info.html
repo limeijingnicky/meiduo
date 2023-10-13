@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <title>用户中心</title>
     <style>
         /* 样式可以根据需要进行自定义 */
@@ -66,35 +68,163 @@
     </style>
 </head>
 <body>
-    <div id="sidebar">
-        <h1>用户中心</h1>
-        <ul>
-            <li><a href="#">个人信息</a></li>
-            <li><a href="#">收货地址</a></li>
-            <li><a href="#">全部订单</a></li>
-            <li><a href="#">修改密码</a></li>
+<!--<div id="sidebar">-->
+<!--    <h1>用户中心</h1>-->
+<!--    <ul>-->
+<!--        <li><a href="#">个人信息</a></li>-->
+<!--        <li><a href="#">收货地址</a></li>-->
+<!--        <li><a href="#">全部订单</a></li>-->
+<!--        <li><a href="#">修改密码</a></li>-->
+<!--    </ul>-->
+<!--</div>-->
+<!--    <div id="content">-->
+<!--        <h1>个人信息</h1>-->
+<!--        <form>-->
+<!--            <div class="form-group">-->
+<!--                <label for="username">用户名:</label>-->
+<!--                <span  id="username" >{{username}}</span>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <label for="mobile">联系方式:</label>-->
+<!--                <span  id="mobile" >{{mobile}}</span>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <label for="email">Email:</label>-->
+<!--                <span  id="email" >{{email}}</span>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                {% if email_active == 0 %}-->
+<!--                <span  id="email_active" >邮箱未激活</span>-->
+<!--                {% else %}-->
+<!--                <span  id="email_actived" >邮箱已激活</span>-->
+<!--                {% endif %}-->
+<!--            </div>-->
+<!--            <button type="submit">保存</button>-->
+<!--            <button type="button" class="cancel">取消</button>-->
+<!--        </form>-->
+<!--        <h1>最近浏览内容</h1>-->
+<!--        &lt;!&ndash; 这里可以添加最近浏览内容的列表或其他信息 &ndash;&gt;-->
+<!--    </div>-->
+
+<div id=app class="right_content clearfix" v-cloak>
+    {% csrf_token %}
+    <div class="info_con clearfix">
+        <h3 class="common_title2">基本信息</h3>
+        <ul class="user_info_list">
+            <li><span>用户名：</span>[[username]]</li>
+            <li><span>用户名：</span>[[mobile]]</li>
+            <li>
+                <span>Email:</span>
+                <div v-if="set_email" >
+                    <input v-model="email" @blur="check_email" type="email" name="email">
+                    <input @click="save_email" type="button" name="" value="保存" >
+                    <input @click="cancel_email" type="button" name="" value="取消">
+                    <div v-show="error_email" class="error_email_tip">邮箱格式错误</div>
+                </div>
+                <div v-else>
+                    <div v-if="email_active">
+                        <span>[[email]]</span> <br/>邮箱已激活
+                    </div>
+                    <div v-else>
+                        邮箱待验证
+                    </div>
+                </div>
+            </li>
         </ul>
     </div>
-    <div id="content">
-        <h1>个人信息</h1>
-        <form>
-            <div class="form-group">
-                <label for="username">用户名:</label>
-                <input type="text" id="username" name="username">
-            </div>
-            <div class="form-group">
-                <label for="contact">联系方式:</label>
-                <input type="text" id="contact" name="contact">
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email">
-            </div>
-            <button type="submit">保存</button>
-            <button type="button" class="cancel">取消</button>
-        </form>
-        <h1>最近浏览内容</h1>
-        <!-- 这里可以添加最近浏览内容的列表或其他信息 -->
-    </div>
+</div>
+
+
+<!--使用js方法，传递数据,再传入vue里-->
+<script type="text/javascript">
+    let username='{{username}}';
+    let mobile='{{mobile}}';
+    let email='{{email}}';
+    let email_active='{{email_active}}';
+</script>
 </body>
+
+
+<script>
+    const { createApp, ref } = Vue;
+
+    const app = createApp({
+        delimiters: ['[[', ']]'],
+        data() {
+            return {
+                username: username,
+                mobile: mobile,
+                email: email,
+                email_active: email_active,
+                set_email: false,
+                error_email: false,
+                send_email_btn_disabled: false,
+                error_email_tip: '重新发送验证邮件',
+                histories: [],
+            };
+        },
+        mounted() {
+//            将字符串转换为布尔值
+            this.email_active = (this.email_active === 'true' || this.email_active === 'True') ? true : false;
+//            如果邮箱未激活，则显示出input项目栏
+            this.set_email =  !this.email_active;
+        },
+        methods: {
+            check_email() {
+                let re = /\w+@\w+\.\w+$/;
+                if (re.test(this.email)) {
+                    this.error_email = false;
+                } else {
+                    this.error_email = true;
+                }
+            },
+            getCookie(name) {
+                const cookies = document.cookie.split('; ');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].split('=');
+                    if (cookie[0] === name) {
+                        return cookie[1];
+                    }
+                }
+                return null;
+            },
+            cancel_email() {
+                this.email = '';
+                this.error_email = false;
+            },
+            save_email() {
+                this.check_email();
+                this.set_email = false;
+                if (this.error_email === false) {
+                    let url = '/emails/';
+                    axios.put(url, { email: this.email }, {
+                        headers: {
+                            'X-CSRFToken': this.getCookie('csrftoken')
+                        },
+                        responseType: 'json'
+                    })
+                        .then((response) => {
+                        if (response.data.code === '0') {
+                            this.set_email = false;
+                            this.send_email_btn_disabled = true;
+//                            this.send_email_tip = '已发送邮件';
+                        } else if (response.data.error.code === '406') {
+                            location.href = '/login/?next=/info/';
+                        } else {
+                            console.log(response);
+                        }
+                    })
+                        .catch((error) => {
+                        console.log(error.response);
+                    });
+                }
+            },
+        },
+    });
+
+    app.mount("#app");
+</script>
+
 </html>
+
+
