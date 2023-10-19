@@ -23,6 +23,11 @@ from django.conf import settings
 # 响应数据，响应数据 html json
 
 
+class AddressView(LoginRequiredMixin,View):
+    def get(self,request):
+        return render(request,'user_center_site.html')
+
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 class LoginRequiredJSONMixin(LoginRequiredMixin):
   # 重写handle_no_permission方法，直接传出一个jsonresponse

@@ -16,5 +16,5 @@ celery_app.autodiscover_tasks(['celery_tasks.sms','celery_tasks.email'])
 
 # celery -A celery_tasks.main worker -l info -P eventlet     celery命令行
 
-# celery -A celery_tasks.main worker -l info -P eventlet --concurrency 20   开多线程
+# celery -A celery_tasks.main worker -l info -P eventlet --concurrency 20   开多协程
 
