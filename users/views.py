@@ -28,6 +28,7 @@ class AddressView(LoginRequiredMixin,View):
         return render(request,'user_center_site.html')
 
 
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 class LoginRequiredJSONMixin(LoginRequiredMixin):
   # 重写handle_no_permission方法，直接传出一个jsonresponse
