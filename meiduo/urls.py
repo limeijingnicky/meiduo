@@ -23,4 +23,5 @@ urlpatterns = [
     path('', include(('contents.urls','contents'),namespace='content')),
     path('', include(('verifications.urls','verifications'),namespace='verification')),
     path('', include(('oauth.urls','oauth'),namespace='oauth')),
+    path('', include(('areas.urls','areas'),namespace='areas')),
 ]

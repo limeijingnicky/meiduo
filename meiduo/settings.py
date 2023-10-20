@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig', ##用户注册页面
     'contents.apps.ContentsConfig', ##首页广告页面
     'oauth.apps.OauthConfig',
+    'areas.apps.AreasConfig',#省市区联动
 
     # 注册过滤模块
     'django_filters',
