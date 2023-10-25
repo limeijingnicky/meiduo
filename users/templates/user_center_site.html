@@ -1,119 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>  <!--导入ajax，进行异步请求，局部刷新数据-->
     <title>美多商城-用户中心</title>
     <style>
         body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-        margin: 0;
-        padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
         }
 
         .header_con {
-        background-color: #ffffff;
-        color: #fff;
-        padding: 10px;
+            background-color: #ffffff;
+            color: #fff;
+            padding: 10px;
         }
 
         .header {
-        display: flex;
-        justify-content: space-between;
+            display: flex;
+            justify-content: space-between;
         }
 
         .welcome {
-        font-size: 18px;
+            font-size: 18px;
         }
 
         .login_btn a {
-        color: #fff;
-        text-decoration: none;
-        margin-right: 10px;
+            color: #fff;
+            text-decoration: none;
+            margin-right: 10px;
         }
 
         .user_link a {
-        color: #fff;
-        text-decoration: none;
-        margin-right: 10px;
+            color: #fff;
+            text-decoration: none;
+            margin-right: 10px;
         }
 
         .search_bar {
-        background-color: #fff;
-        padding: 10px;
-        display: flex;
-        justify-content: space-between;
+            background-color: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
         }
 
         .logo {
-        font-size: 24px;
-        font-weight: bold;
-        color: #333;
-        text-decoration: none;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
         }
 
         .search_wrap {
-        display: flex;
-        align-items: center;
+            display: flex;
+            align-items: center;
         }
 
         .input_text {
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
         .input_btn {
-        background-color: #333;
-        color: #fff;
-        padding: 5px 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         .search_suggest {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
         .search_suggest li {
-        margin: 5px 0;
+            margin: 5px 0;
         }
 
         .main_con {
-        background-color: #fff;
-        padding: 20px;
+            background-color: #fff;
+            padding: 20px;
         }
 
         .left_menu_con {
-        background-color: #ffffff;
-        color: #fff;
-        padding: 10px;
+            background-color: #ffffff;
+            color: #fff;
+            padding: 10px;
         }
 
         .left_menu_con h3 {
-        font-size: 18px;
-        margin: 0;
-        padding: 10px 0;
+            font-size: 18px;
+            margin: 0;
+            padding: 10px 0;
         }
 
         .left_menu_con ul {
-        list-style: none;
-        padding: 0;
+            list-style: none;
+            padding: 0;
         }
 
         .left_menu_con li {
-        margin: 5px 0;
+            margin: 5px 0;
         }
 
         .right_content {
-        padding: 20px;
+            padding: 20px;
         }
 
     </style>
@@ -147,7 +146,7 @@
             </div>
         </div>
     </div>
-    <div class="'search_bar clearfix">
+    <div class="search_bar clearfix">
         <a href="/" class="logo fl">
             <div class='search_wrap fl'>
                 <form method="get" action="/search/" class="search_con">
@@ -168,7 +167,7 @@
 
             <ul>
                 <li><a href="/info">·个人信息</a></li>
-                <li><a href="/addresses" class="active">·收货地址</a></li>
+                <li><a href="/address" class="active">·收货地址</a></li>
                 <li><a href="user_center_order.html">·全部订单</a></li>
                 <li><a href="user_center_pass.html">·修改密码</a></li>
             </ul>
@@ -212,12 +211,13 @@
                     <li><span>电子邮箱：</span><b>hmmeiduo@163.com</b></li>
                 </ul>
                 <div class="down_btn">
-                    <a href="javascript:；" class="set_default">设为默认</a>
-                    <a href="javascript:;" class="edit_icon">编辑</a>
+<!--                    <a v-if="address.id!=default_address_id">设为默认</a>-->
+<!--                    <a href="javascript:;" class="edit_icon">编辑</a>-->
                 </div>
             </div>
         </div>
     </div>
+
     <div class="footer">
         <div class="foot_link">
             <a href="#">关于我们</a>
@@ -238,37 +238,52 @@
             <form>
                 <div class="form_group">
                     <label>*收货人：</label>
-                    <input v-model="form_address,receiver" @blur="check_receiver" type="text" class="check_receiver">
+                    <input v-model="form_address.receiver" @blur="check_receiver" type="text" class="check_receiver">
                     <span v-show="error_receiver" class="receiver_error">请填写收件人</span>
                 </div>
                 <div class="form_group">
-                    <label>所在地区:</label>
+                    <label>所在地区：</label>
                     <select v-model="form_address.province_id">
-                        <option value="a">请选择</option>
-                        <option value="1">北京</option>
-                        <option value="2">上海</option>
-                        <option value="3">广州</option>
-                        <option vaLue="4">深圳</option>
+                        <option value="">请选择省份</option>
+                        <option v-for="province in provinces" :value="province.id">[[ province.name ]]</option>
                     </select>
                     <select v-model="form_address.city_id">
-                        <option value="0">请选择</option>
-                        <option value="1">北京</option>
-                        <option value="2">上海</option>
-                        <option value="3">广州</option>
-                        <option value="4">深圳</option>
+                        <option value="">请选择市</option>
+                        <option v-for="city in cities" :value="city.id">[[ city.name ]]</option>
                     </select>
                     <select v-model="form_address.district_id">
-                        <option value="a">请选择</option>
-                        <option value="1">东城区</option>
-                        <option value="2">西城区</option>
-                        <option value="3">昌平区</option>
-                        <option value="4">海淀区</option>
+                        <option value="">请选择区</option>
+                        <option v-for="district in districts" :value="district.id">[[ district.name ]]</option>
                     </select>
                 </div>
+                <!--                <div class="form_group">-->
+                <!--                    <label>所在地区:</label>-->
+                <!--                    <select v-model="form_address.province_id">-->
+                <!--                        <option value="a">请选择</option>-->
+                <!--                        <option value="1">北京</option>-->
+                <!--                        <option value="2">上海</option>-->
+                <!--                        <option value="3">广州</option>-->
+                <!--                        <option vaLue="4">深圳</option>-->
+                <!--                    </select>-->
+                <!--                    <select v-model="form_address.city_id">-->
+                <!--                        <option value="0">请选择</option>-->
+                <!--                        <option value="1">北京</option>-->
+                <!--                        <option value="2">上海</option>-->
+                <!--                        <option value="3">广州</option>-->
+                <!--                        <option value="4">深圳</option>-->
+                <!--                    </select>-->
+                <!--                    <select v-model="form_address.district_id">-->
+                <!--                        <option value="a">请选择</option>-->
+                <!--                        <option value="1">东城区</option>-->
+                <!--                        <option value="2">西城区</option>-->
+                <!--                        <option value="3">昌平区</option>-->
+                <!--                        <option value="4">海淀区</option>-->
+                <!--                    </select>-->
+                <!--                </div>-->
                 <div class="form_group">
                     <label>*详细地址：</label>
                     <input v-model="form_address.place" @blur="check_place" type="text" class="place">
-                    <span V-show="error_place" class="place_error">请填写地址信息</span>
+                    <span v-show="error_place" class="place_error">请填写地址信息</span>
                 </div>
                 <div class="form_group">
                     <label>*手机：</label>
@@ -282,22 +297,271 @@
                 </div>
                 <div class="form_group">
                     <label>邮箱：</label>
-                    <input v=model="form_address.email" @blur="check_email" type="text" class="email">
+                    <input v-model="form_address.email" @blur="check_email" type="text" class="email">
                     <span v-show="error_email" class="email_error">邮箱信息有误</span>
                 </div>
-                <input type="button" name="" value="新增" class="info_submit">
+                <input @click="save_address" type="button" name="" value="新增" class="info_submit">
                 <input @click="is_show_edit=false" type="reset" name="" value="取 消" class="info_submission">
             </form>
         </div>
         <div class="mask"></div>
     </div>
-
-    <script type="text/javascript">
-        let addresses = "";
-        let default_address_id = "";
-    </script>
-
 </div>
-</body>
-</html>
 
+<!--    普通js代码 获得前端的数据-->
+<script type="text/javascript">
+    let addresses = "";
+    let default_address_id = "";
+</script>
+</body>
+
+<!--  vue代码，将js获得的变量进行运用-->
+<script>
+    const { createApp, ref } = Vue;
+
+    const app = createApp ({
+
+        delimiters:['[[',']]'],
+
+        data(){
+            return {
+                username: '',
+                is_show_edit: true,
+                form_address: {
+                    receiver:'',
+                    province_id:'',
+                    city_id:'',
+                    district_id:'',
+                    place:'',
+                    mobile:'' ,
+                    tel:'',
+                    email:'',
+                },
+
+                provinces: [],
+                cities: [],
+                districts: [],
+                addresses: JSON.parse(JSON.stringify(addresses)),
+                default_address_id: default_address_id,
+                editing_address_index:'',
+                edit_title_index:'',
+                new_title:'',
+
+                error_receiver: false,
+                error_place: false,
+                error_mobile: false,
+                error_tel: false,
+                error_email: false,
+            }
+        },
+
+        mounted(){
+            this.get_provinces();
+            this.username = this.getCookie('username');
+        },
+
+        // 用于监视 Vue 实例的数据变化并在数据变化时执行特定的逻辑。
+        watch:{
+            //监听到省份id变化
+            'form_address.province_id': function(){
+                if (this.form_address.province_id) {
+                    let url = '/areas/?area_id=' + this.form_address.province_id;
+                    axios.get(url, {
+                        responseType: 'json'
+                    })
+                        .then(response => {
+                        if (response.data.code == '0') {
+                            this.cities = response.data.sub_data.subs;
+                        } else {
+                            console.log (response.data);
+                            this.cities = [];
+                        }
+                    })
+                        .catch(error =>{
+                         console.log(error.response) ;
+                         this.cities = [];
+                    })
+                }
+            },
+            //监听到区id变化
+            'form_address.city_id': function(){
+                if (this.form_address.city_id) {
+                    let url = '/areas/?area_id=' + this.form_address.city_id;
+                    axios.get(url, {
+                        responseType: 'json'
+                    })
+
+                        .then(response => {
+                        if (response.data.code == '0') {
+                            this.districts = response.data.sub_data.subs;
+                        } else {
+                            console.log (response.data);
+                            this.districts= [];
+                        }
+                    })
+                        .catch(error =>{
+                         console.log(error.response) ;
+                         this.districts= [];
+                    })
+                }
+            },
+        },
+
+
+        methods:{
+            getCookie(cookieName) {
+                const name = cookieName + "=";
+                const decodedCookie = decodeURIComponent(document.cookie);
+                const cookieArray = decodedCookie.split(';');
+                for (let i = 0; i < cookieArray.length; i++) {
+                    let cookie = cookieArray[i];
+                    while (cookie.charAt(0) === ' ') {
+                        cookie = cookie.substring(1);
+                    }
+                    if (cookie.indexOf(name) === 0) {
+                        return cookie.substring(name.length, cookie.length);
+                    }
+                }
+                return "";
+            },
+
+            show_edit_site(index){
+                this.is_show_edit = true;
+                this.clear_all_errors();
+                this.editing_address_index = index.toString();
+                 // 只获取要编辑的数据
+                this.form_address = JSON.parse(JSON.stringify(this.addresses[index]));
+            },
+
+            // 获取省份数据
+            get_provinces(){
+                let url = '/areas/';
+                axios.get(url, {
+                    responseType: 'json'
+                })
+                    .then(response => {
+                    if (response.data.code == '0') {
+                        this.provinces = response.data.province_list;
+                    } else {
+                        console.log(error.response) ;
+                        this.provinces = [];
+                    }
+                })
+                    .catch(error => {
+                     console.log(error.response) ;
+                     this.provinces = [];
+                })
+            },
+
+            //校验收件人名称
+            check_receiver(){
+                let regex0 = /[a-zA-Z0-9_-]{1,10}$/;
+                // 使用正则匹配用户名数据
+                if (regex0.test(this.form_address.receiver)) {
+                    this.error_receiver= false;
+                }else{
+                    this.error_receiver= true;
+                }
+            },
+            //校验地址
+            check_place(){
+                 let  regex0= /\S+/;
+                if(regex0.test(this.form_address.place)){
+                    this.error_place=false;
+
+                }
+                else{
+                this.error_place=true;
+            }
+
+        },
+
+        //校验手机号码
+        check_mobile(){
+            let  regex0= /1[0-9]{10}$/;
+            if(regex0.test(this.form_address.mobile)){
+                this.error_mobile=false;
+            }else{
+                this.error_mobile= true;
+            }
+
+        },
+
+        //校验固定电话
+        check_tel(){
+            let  regex0= /[0-9]{6,10}$/;
+            if(regex0.test(this.form_address.tel)){
+                this.error_tel=false;
+            }else{
+                this.error_tel= true;
+            }
+
+        },
+
+        //校验邮箱
+        check_email(){
+            // let  regex0= /\w+@\w+\.\w+$/;
+            let regex0= /[\w+@][\w+\.]/;  //[@][.]必须包含@和.  [@]|[.]表示或
+            if (regex0.test(this.form_address.email)){
+                this.error_email= false;
+            }else{
+                this.error_email= true;
+            }
+
+        },
+
+        getCookie(name) {
+            const cookies = document.cookie.split('; ');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].split('=');
+                if (cookie[0] === name) {
+                    return cookie[1];
+                }
+            }
+            return null;
+        },
+
+        //新增收货地址
+        save_address(){
+            if (this.error_receiver || this.error_place || this.error_mobile || this.error_email
+            || !this.form_address.province_id ||!this.form_address.city_id || !this.form_address.district_id ){
+                alert('填写信息有误');
+            }else{
+                if (this.editing_address_index===''){
+                    //新增地址
+                    let url='/addresses/create/';
+                    axios.post(url, this.form_address, {
+                        headers: {
+                            'X-CSRFToken': this.getCookie('csrftoken')
+                        },
+                        responseType: 'json'
+                    })
+                        .then(response =>{
+                        if (response.data.code=='0'){
+                            //    局部刷新页面,展示地址信息
+                            this.addresses.splice(0,0,response.data.address);
+                            this.is_show_edit=false;
+                        }else if(response.data.code=='406'){
+                            location.href='/login/?next=/address/';
+                        }else{
+                            alert(response.data.errmsg);
+                        }
+                    })
+
+                        .catch(error => {
+                         console.log(error.response) ;
+                    })
+                }else{
+                    // 修改地址
+                    let url='/addresses/'+this.address[this.editing_address_index].id+'/';
+
+                }
+            }
+        },
+    }
+    });
+
+    app.mount("#app");
+
+</script>
+</html>

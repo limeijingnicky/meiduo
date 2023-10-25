@@ -15,6 +15,7 @@ from celery_tasks.email.tasks import send_verify_email
 from itsdangerous import URLSafeSerializer
 from itsdangerous import BadSignature
 from django.conf import settings
+from users.models import Address,Users
 
 ##设计子接口逻辑，
 # 包括请求方法，get post put delete
@@ -23,18 +24,141 @@ from django.conf import settings
 # 响应数据，响应数据 html json
 
 
-class AddressView(LoginRequiredMixin,View):
-    def get(self,request):
-        return render(request,'user_center_site.html')
-
-
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 class LoginRequiredJSONMixin(LoginRequiredMixin):
   # 重写handle_no_permission方法，直接传出一个jsonresponse
     def handle_no_permission(self):
         # 响应json数据
         return JsonResponse({'code':'406','errmsg':'用户未登录'})
+
+
+class AddressCreateView(LoginRequiredJSONMixin,View):
+    #新增收货地址
+    def post(self,request):
+        # 判断用户地址数量是否超过可登录上限
+        # count= Address.objects.filter(user=request.user).count()
+        # 通过外键查询
+        count = request.user.addresses.count()
+        if count >= 5:
+            return JsonResponse({'code': '408', 'errmsg': '已超过最多的地址保存数量'})
+
+        #接收参数
+        json_str=request.body.decode()
+        json_dict=json.loads(json_str)
+        receiver=json_dict.get('receiver')
+        province_id=json_dict.get('province_id')
+        city_id=json_dict.get('city_id')
+        district_id=json_dict.get('district_id')
+        place=json_dict.get('place')
+        mobile=json_dict.get('mobile')
+        email = json_dict.get('email')
+        tel= json_dict.get('tel')
+
+        # 校验参数
+        if not all([receiver, province_id, city_id, district_id, place, mobile]):
+            return HttpResponseForbidden('缺少必传参数')
+        if not re.match(r'^1[0-9]{10}$', mobile):
+            return HttpResponseForbidden('参数mobile有误')
+        if tel:
+            if not re.match(r'^[0-9]{6,10}$', tel):
+                return HttpResponseForbidden('参数tel有误')
+        if email:
+            if not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
+                return HttpResponseForbidden('参数email有误')
+
+        #保存地址信息,将地址信息存储在address表格里
+        try:
+            # address=Address(
+            #     user = request.user,
+            #     title =receiver,
+            #     receiver =receiver,
+            #     #外键都是绑定的id
+            #     province_id = province_id,
+            #     city_id = city_id,
+            #     district_id = district_id,
+            #     place =place,
+            #     mobile =mobile,
+            #     tel = tel,
+            #     email = email,
+            #     # is_deleted = 有默认值
+            # )
+
+            address = Address.objects.create(
+                user=request.user,
+                title=receiver,
+                receiver=receiver,
+                # 外键都是绑定的id
+                province_id=province_id,
+                city_id=city_id,
+                district_id=district_id,
+                place=place,
+                mobile=mobile,
+                tel=tel,
+                email=email,
+                # is_deleted = 有默认值
+            )
+
+            #如果用户没有默认的地址，则需要指定默认的地址
+            if not request.user.default_address:
+                request.user.default_address = address
+                request.user.save()
+
+        except Exception as e:
+            return JsonResponse({'code':'407','errmsg':'数据传输错误'})
+
+
+        #新增地址成功后，实现网页局部刷新
+        # 构造响应数据
+        address_dict = {
+            "id": address.id,
+            "title": address.title,
+            "receiver": address.receiver,
+            "province": address.province.name,
+            "city": address.city.name,
+            "district": address.district.name,
+            "place": address.place,
+            "mobile": address.mobile,
+            "tel": address.tel,
+            "email": address.email
+        }
+
+        # 响应更新地址结果
+        return JsonResponse({'code': '0', 'errmsg': '更新地址成功', 'address': address_dict})
+
+
+class AddressView(LoginRequiredMixin,View):
+    #查询地址信息
+    def get(self,request):
+        #当前用户
+        user=request.user
+        #查找当前对象对应的address类
+        addresses=Address.objects.filter(user=user,is_deleted=False)
+        # addresses=user.addresses.filter(is_deleted=False)
+
+        #将对象列表化
+        address_list=[]
+        for address in addresses:
+            address_dict={
+                "id": address.id,
+                "title": address.title,
+                "receiver": address.receiver,
+                "province": address.province.name,
+                "city": address.city.name,
+                "district": address.district.name,
+                "place": address.place,
+                "mobile": address.mobile,
+                "tel": address.tel,
+                "email": address.email
+            }
+            address_list.append(address_dict)
+
+        context={
+            'default_address_id': user.default_address_id,
+            'address': address_list
+        }
+        return render(request,'user_center_site.html',context)
+
+
 
 #设置一个激活链接
 def generate_varify_email_url(user):
