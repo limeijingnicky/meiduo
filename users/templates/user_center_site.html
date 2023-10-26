@@ -14,6 +14,28 @@
             padding: 0;
         }
 
+        ul {
+            list-style: none; /* 隐藏默认的列表标记 */
+            padding: 0; /* 可以添加一些内边距以调整文本与左侧边框的距离 */
+
+        }
+        .site_list{
+            border: 1px solid #000; /* 设置1像素的实线边框，颜色为黑色 (#000) */
+            padding: 10px; /* 添加一些内边距，以使边框与列表内容之间有一些间隔 */
+        }
+
+        form {
+            list-style: none;
+            padding: 0;
+            border: 1px solid #000;
+            padding: 10px;
+            text-align:left;
+        }
+
+        .t::before{
+            content:'\00a0';
+        }
+
         .header_con {
             background-color: #ffffff;
             color: #fff;
@@ -172,52 +194,35 @@
                 <li><a href="user_center_pass.html">·修改密码</a></li>
             </ul>
         </div>
+
         <div class="right_content clearfix" v-cloak>
             <div class="site_top_con">
-                <a @click="show_add_site">新增收货地址</a>
-                <span>你已创建了<b>2</b>个收货地址，最多可创建<b>20</b>个</span>
+                <button @click="is_show_edit=true">新增收货地址</button>
+                <div></div>
+                <span>你已创建了<b>[[ addresses.length ]]</b>个收货地址，最多可创建<b>5</b>个</span>
             </div>
-            <div class="site_con">
+            <div class="site_con" v-for="(address, index) in addresses">
                 <div class="site_title">
-                    <h3>传智播客北京</h3>
+                    <h3>[[ address.title ]]</h3>
                     <a href="javascript:;" class="edit_icon"></a>
-                    <em>默认地址</em>
-                    <span class="del_site">x</span>
+                    <em v-if="address.id==default_address_id">默认地址</em>
+                    <em v-else><button @click="delete_address(index)" class="del_site">x</button></em>
                 </div>
                 <ul class="site_list">
-                    <li><span>收货人：</span><b>传智播客</b></li>
-                    <li><span>所在地区：</span><b>北京市昌平区</b></li>
-                    <li><span>地址：</span><b>建材城西路</b></li>
-                    <li><span>手机：</span><b>188****0001</b></li>
-                    <li><span>固定电话：</span><b>78912345</b></li>
-                    <li><span>电子邮箱：</span><b>hmmeiduo@163.com</b></li>
+                    <li><span>收货人：</span><b>[[ address.receiver ]]</b></li>
+                    <li><span>所在地区：</span><b>[[ address.province ]] [[address.city]] [[ address.district ]]</b></li>
+                    <li><span>地址：</span><b>[[ address.place ]]</b></li>
+                    <li><span>手机：</span><b>[[ address.mobile ]]</b></li>
+                    <li><span>固定电话：</span><b>[[ address.tel ]]</b></li>
+                    <li><span>电子邮箱：</span><b>[[ address.email ]]</b></li>
                 </ul>
                 <div class="down_btn">
-                    <a href="javascript:;" class="edit_icon">编辑</a>
-                </div>
-            </div>
-            <div class="site_con">
-                <div class="site_title">
-                    <h3>传智播客 北京</h3>
-                    <a href="javascript:;" class="edit_icon"></a>
-                    <span class="del_site">x</span>
-                </div>
-                <ul class="site_list">
-                    <li><span>收货人：</span><b>传智播客</b></li>
-                    <li><span>所在地区：</span><b>北京市昌平区</b></li>
-                    <li><span>地址：</span><b>建材城西路</b></li>
-                    <li><span>手机：</span><b>188****0001</b></li>
-                    <li><span>固定电话：</span><b>78912345</b></li>
-                    <li><span>电子邮箱：</span><b>hmmeiduo@163.com</b></li>
-                </ul>
-                <div class="down_btn">
-<!--                    <a v-if="address.id!=default_address_id">设为默认</a>-->
-<!--                    <a href="javascript:;" class="edit_icon">编辑</a>-->
+                    <button v-if="address.id!=default_address_id" @click="set_default(index)">设为默认地址</button>
+                    <button @click="show_edit_site(index)" class="edit_icon">编辑地址</button>
                 </div>
             </div>
         </div>
     </div>
-
     <div class="footer">
         <div class="foot_link">
             <a href="#">关于我们</a>
@@ -229,11 +234,12 @@
         <p>CopyRight 2016 北京美多商业股份有限公司 All Rights Reserved</p>
         <p>电话：010-****88R 京ICP奋*＊＊＊＊＊＊8号</P>
     </div>
+
     <div class="pop_con" v-show="is_show_edit" v-cloak>
         <div class="site_con site_pop">
             <div class="site pop title">
-                <h3>新增收货地址</h3>
-                <a @click="is_show_edit=false">x</a>
+                <h3>编辑收货地址</h3>
+                <!--                <a @click="is_show_edit=false">x</a>-->
             </div>
             <form>
                 <div class="form_group">
@@ -242,7 +248,7 @@
                     <span v-show="error_receiver" class="receiver_error">请填写收件人</span>
                 </div>
                 <div class="form_group">
-                    <label>所在地区：</label>
+                    <label class="t">所在地区：</label>
                     <select v-model="form_address.province_id">
                         <option value="">请选择省份</option>
                         <option v-for="province in provinces" :value="province.id">[[ province.name ]]</option>
@@ -256,30 +262,7 @@
                         <option v-for="district in districts" :value="district.id">[[ district.name ]]</option>
                     </select>
                 </div>
-                <!--                <div class="form_group">-->
-                <!--                    <label>所在地区:</label>-->
-                <!--                    <select v-model="form_address.province_id">-->
-                <!--                        <option value="a">请选择</option>-->
-                <!--                        <option value="1">北京</option>-->
-                <!--                        <option value="2">上海</option>-->
-                <!--                        <option value="3">广州</option>-->
-                <!--                        <option vaLue="4">深圳</option>-->
-                <!--                    </select>-->
-                <!--                    <select v-model="form_address.city_id">-->
-                <!--                        <option value="0">请选择</option>-->
-                <!--                        <option value="1">北京</option>-->
-                <!--                        <option value="2">上海</option>-->
-                <!--                        <option value="3">广州</option>-->
-                <!--                        <option value="4">深圳</option>-->
-                <!--                    </select>-->
-                <!--                    <select v-model="form_address.district_id">-->
-                <!--                        <option value="a">请选择</option>-->
-                <!--                        <option value="1">东城区</option>-->
-                <!--                        <option value="2">西城区</option>-->
-                <!--                        <option value="3">昌平区</option>-->
-                <!--                        <option value="4">海淀区</option>-->
-                <!--                    </select>-->
-                <!--                </div>-->
+
                 <div class="form_group">
                     <label>*详细地址：</label>
                     <input v-model="form_address.place" @blur="check_place" type="text" class="place">
@@ -291,16 +274,16 @@
                     <span v-show="error_mobile" class="mobile_error">手机信息有误</span>
                 </div>
                 <div class="form_group">
-                    <label>固定电话：</label>
+                    <label class="t">固定电话：</label>
                     <input v-model="form_address.tel" @blur="check_tel" type="text" class="tel">
                     <span v-show="error_tel" class="tel_error">固定电话有误</span>
                 </div>
                 <div class="form_group">
-                    <label>邮箱：</label>
+                    <label class="t">邮箱：</label>
                     <input v-model="form_address.email" @blur="check_email" type="text" class="email">
                     <span v-show="error_email" class="email_error">邮箱信息有误</span>
                 </div>
-                <input @click="save_address" type="button" name="" value="新增" class="info_submit">
+                <input @click="save_address" type="button" name="" value="保存" class="info_submit">
                 <input @click="is_show_edit=false" type="reset" name="" value="取 消" class="info_submission">
             </form>
         </div>
@@ -310,8 +293,8 @@
 
 <!--    普通js代码 获得前端的数据-->
 <script type="text/javascript">
-    let addresses = "";
-    let default_address_id = "";
+    let addresses = {{address | safe}};
+    let default_address_id = "{{default_address_id}}";
 </script>
 </body>
 
@@ -326,7 +309,7 @@
         data(){
             return {
                 username: '',
-                is_show_edit: true,
+                is_show_edit: false,
                 form_address: {
                     receiver:'',
                     province_id:'',
@@ -341,8 +324,11 @@
                 provinces: [],
                 cities: [],
                 districts: [],
+
+                // 通过前面的js代码获得
                 addresses: JSON.parse(JSON.stringify(addresses)),
                 default_address_id: default_address_id,
+
                 editing_address_index:'',
                 edit_title_index:'',
                 new_title:'',
@@ -378,8 +364,8 @@
                         }
                     })
                         .catch(error =>{
-                         console.log(error.response) ;
-                         this.cities = [];
+                        console.log(error.response) ;
+                        this.cities = [];
                     })
                 }
             },
@@ -400,8 +386,8 @@
                         }
                     })
                         .catch(error =>{
-                         console.log(error.response) ;
-                         this.districts= [];
+                        console.log(error.response) ;
+                        this.districts= [];
                     })
                 }
             },
@@ -426,11 +412,58 @@
             },
 
             show_edit_site(index){
-                this.is_show_edit = true;
-                this.clear_all_errors();
+                this.is_show_edit = true;// 显示编辑界面
+                // this.clear_all_errors();
                 this.editing_address_index = index.toString();
-                 // 只获取要编辑的数据
+                // 只获取要编辑的数据
                 this.form_address = JSON.parse(JSON.stringify(this.addresses[index]));
+            },
+
+            delete_address(index){
+                let url = '/address/'+this.addresses[index].id+'/'
+                axios.delete(url,{
+                    headers: {
+                        'X-CSRFToken': this.getCookie('csrftoken')
+                    },
+                    responseType: 'json'
+                })
+                    .then(response => {
+                    if(response.data.code=='0'){
+                        //删除对应标签
+                        //添加元素splice(index, 0无删除元素, itemToAdd) 删除元素splice(index, 1删除一个元素) 替换元素splice(index, 1删除一个元素, newItem)
+                        this.addresses.splice(index,1);
+                    }else if(response.data.code=='406'){
+                        location.href='/login/?next=/address/';
+                    }else{
+                        alert(response.data.errmsg);
+                    }
+                })
+                    .catch(error => {
+                    console.log(error.response);
+                })
+            },
+
+            set_default(index){
+                let url = '/address/default/'+this.addresses[index].id+'/' ;
+                axios.put(url,{}, {
+                    headers: {
+                        'X-CSRFToken': this.getCookie('csrftoken')
+                    },
+                    responseType: 'json'
+                })
+                    .then(response => {
+                    if (response.data.code == '0') {
+                        // 设置默认地址标签
+                        this.default_address_id = this.addresses[index].id;
+                    } else if (response.data.code == '406') {
+                        location.href = '/login/?next=/addresses/';
+                    } else {
+                        alert(response.data.errmsg);
+                    }
+                })
+                    .catch(error => {
+                    console.log(error.response);
+                })
             },
 
             // 获取省份数据
@@ -448,8 +481,8 @@
                     }
                 })
                     .catch(error => {
-                     console.log(error.response) ;
-                     this.provinces = [];
+                    console.log(error.response) ;
+                    this.provinces = [];
                 })
             },
 
@@ -465,100 +498,118 @@
             },
             //校验地址
             check_place(){
-                 let  regex0= /\S+/;
+                let regex0= /\S+/;
                 if(regex0.test(this.form_address.place)){
                     this.error_place=false;
 
                 }
                 else{
-                this.error_place=true;
-            }
-
-        },
-
-        //校验手机号码
-        check_mobile(){
-            let  regex0= /1[0-9]{10}$/;
-            if(regex0.test(this.form_address.mobile)){
-                this.error_mobile=false;
-            }else{
-                this.error_mobile= true;
-            }
-
-        },
-
-        //校验固定电话
-        check_tel(){
-            let  regex0= /[0-9]{6,10}$/;
-            if(regex0.test(this.form_address.tel)){
-                this.error_tel=false;
-            }else{
-                this.error_tel= true;
-            }
-
-        },
-
-        //校验邮箱
-        check_email(){
-            // let  regex0= /\w+@\w+\.\w+$/;
-            let regex0= /[\w+@][\w+\.]/;  //[@][.]必须包含@和.  [@]|[.]表示或
-            if (regex0.test(this.form_address.email)){
-                this.error_email= false;
-            }else{
-                this.error_email= true;
-            }
-
-        },
-
-        getCookie(name) {
-            const cookies = document.cookie.split('; ');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].split('=');
-                if (cookie[0] === name) {
-                    return cookie[1];
+                    this.error_place=true;
                 }
-            }
-            return null;
-        },
 
-        //新增收货地址
-        save_address(){
-            if (this.error_receiver || this.error_place || this.error_mobile || this.error_email
-            || !this.form_address.province_id ||!this.form_address.city_id || !this.form_address.district_id ){
-                alert('填写信息有误');
-            }else{
-                if (this.editing_address_index===''){
-                    //新增地址
-                    let url='/addresses/create/';
-                    axios.post(url, this.form_address, {
-                        headers: {
-                            'X-CSRFToken': this.getCookie('csrftoken')
-                        },
-                        responseType: 'json'
-                    })
-                        .then(response =>{
-                        if (response.data.code=='0'){
-                            //    局部刷新页面,展示地址信息
-                            this.addresses.splice(0,0,response.data.address);
-                            this.is_show_edit=false;
-                        }else if(response.data.code=='406'){
-                            location.href='/login/?next=/address/';
-                        }else{
-                            alert(response.data.errmsg);
-                        }
-                    })
+            },
 
-                        .catch(error => {
-                         console.log(error.response) ;
-                    })
+            //校验手机号码
+            check_mobile(){
+                let regex0= /1[0-9]{10}$/;
+                if(regex0.test(this.form_address.mobile)){
+                    this.error_mobile=false;
                 }else{
-                    // 修改地址
-                    let url='/addresses/'+this.address[this.editing_address_index].id+'/';
-
+                    this.error_mobile= true;
                 }
-            }
+
+            },
+
+            //校验固定电话
+            check_tel(){
+                let regex0= /[0-9]{6,10}$/;
+                if(regex0.test(this.form_address.tel)){
+                    this.error_tel=false;
+                }else{
+                    this.error_tel= true;
+                }
+
+            },
+
+            //校验邮箱
+            check_email(){
+                // let regex0= /\w+@\w+\.\w+$/;
+                let regex0= /[\w+@][\w+\.]/; //[@][.]必须包含@和. [@]|[.]表示或
+                if (regex0.test(this.form_address.email)){
+                    this.error_email= false;
+                }else{
+                    this.error_email= true;
+                }
+
+            },
+
+            getCookie(name) {
+                const cookies = document.cookie.split('; ');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].split('=');
+                    if (cookie[0] === name) {
+                        return cookie[1];
+                    }
+                }
+                return null;
+            },
+
+            //新增收货地址
+            save_address(){
+                if (this.error_receiver || this.error_place || this.error_mobile || this.error_email
+                || !this.form_address.province_id ||!this.form_address.city_id || !this.form_address.district_id ){
+                    alert('填写信息有误');
+                }else{
+                    if (this.editing_address_index===''){
+                        //新增地址
+                        let url='/addresses/create/';
+                        axios.post(url, this.form_address, {
+                            headers: {
+                                'X-CSRFToken': this.getCookie('csrftoken')
+                            },
+                            responseType: 'json'
+                        })
+                            .then(response =>{
+                            if (response.data.code=='0'){
+                                // 局部刷新页面,展示地址信息
+                                this.addresses.splice(0,0,response.data.address);
+                                this.is_show_edit=false;
+                            }else if(response.data.code=='406'){
+                                location.href='/login/?next=/address/';
+                            }else{
+                                alert(response.data.errmsg);
+                            }
+                        })
+
+                            .catch(error => {
+                            console.log(error.response) ;
+                        })
+                    }else{
+                        // 修改地址
+                        let url='/address/'+this.addresses[this.editing_address_index].id+'/';
+                        axios.put(url,this.form_address,{
+                            headers: {
+                                'X-CSRFToken': this.getCookie('csrftoken')
+                            },
+                            responseType: 'json'
+                        })
+                            .then(response => {
+                            if(response.data.code=='0'){
+                                this.addresses[this.editing_address_index]=response.data.address;
+                                this.is_show_edit=false;
+                            }else if(response.data.code=='406'){
+                                location.href='/login/?next=/address/';
+                            }else{
+                                alert(response.data.errmsg);
+                            }
+                        })
+                            .catch(error => {
+                            console.log(error.response) ;
+                        })
+                    }
+                }
+            },
         },
-    }
     });
 
     app.mount("#app");

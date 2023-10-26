@@ -31,6 +31,99 @@ class LoginRequiredJSONMixin(LoginRequiredMixin):
         # 响应json数据
         return JsonResponse({'code':'406','errmsg':'用户未登录'})
 
+class DefaultAddressView(LoginRequiredJSONMixin,View):
+    def put(self,request,address_id):
+        # 设置默认地址
+        try:
+            address=Address.objects.get(id=address_id)
+            request.user.default_address = address
+            request.user.save()
+        except Exception as e:
+            return JsonResponse({'code': '409', 'errmsg': '无法设置为默认地址'})
+
+        return JsonResponse({'code': '0', 'errmsg': '设置默认地址成功'})
+
+
+class UpdateDestroyAddressView(LoginRequiredJSONMixin,View):
+    #修改收货地址
+    def put(self,request,address_id):
+
+        #接收参数
+        json_str=request.body.decode()
+        json_dict=json.loads(json_str)
+        receiver=json_dict.get('receiver')
+        province_id=json_dict.get('province_id')
+        city_id=json_dict.get('city_id')
+        district_id=json_dict.get('district_id')
+        place=json_dict.get('place')
+        mobile=json_dict.get('mobile')
+        email = json_dict.get('email')
+        tel= json_dict.get('tel')
+
+        # 校验参数
+        if not all([receiver, province_id, city_id, district_id, place, mobile]):
+            return HttpResponseForbidden('缺少必传参数')
+        if not re.match(r'^1[0-9]{10}$', mobile):
+            return HttpResponseForbidden('参数mobile有误')
+        if tel:
+            if not re.match(r'^[0-9]{6,10}$', tel):
+                return HttpResponseForbidden('参数tel有误')
+        if email:
+            if not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
+                return HttpResponseForbidden('参数email有误')
+
+        #保存地址信息,将地址信息覆盖旧的地址信息
+        try:
+            addre = Address.objects.get(id=address_id)
+            addre.user=request.user
+            addre.title=receiver
+            addre.receiver=receiver
+            # 外键都是绑定的id
+            addre.province_id=province_id
+            addre.city_id=city_id
+            addre.district_id=district_id
+            addre.place=place
+            addre.mobile=mobile
+            addre.tel=tel
+            addre.email=email
+            # addre.is_deleted = 有默认值
+            addre.save()
+
+        except Exception as e:
+            return JsonResponse({'code':'407','errmsg':'数据传输错误'})
+
+
+        #新增地址成功后，实现网页局部刷新
+        # 构造响应数据
+        address=Address.objects.get(id=address_id)
+        address_dict = {
+            "id": address.id,
+            "title": address.title,
+            "receiver": address.receiver,
+            "province": address.province.name,
+            "city": address.city.name,
+            "district": address.district.name,
+            "place": address.place,
+            "mobile": address.mobile,
+            "tel": address.tel,
+            "email": address.email
+        }
+
+        # 响应更新地址结果
+        return JsonResponse({'code': '0', 'errmsg': '修改地址成功', 'address': address_dict})
+
+    #删除收货地址
+    def delete(self,request,address_id):
+        try:
+            #实现逻辑删除
+            address=Address.objects.get(id=address_id)
+            address.is_deleted=True
+            address.save()
+
+        except Exception as e:
+            return JsonResponse({'code': '407', 'errmsg': '删除地址失败'})
+
+        return JsonResponse({'code': '0', 'errmsg': '删除地址成功'})
 
 class AddressCreateView(LoginRequiredJSONMixin,View):
     #新增收货地址
@@ -68,21 +161,6 @@ class AddressCreateView(LoginRequiredJSONMixin,View):
 
         #保存地址信息,将地址信息存储在address表格里
         try:
-            # address=Address(
-            #     user = request.user,
-            #     title =receiver,
-            #     receiver =receiver,
-            #     #外键都是绑定的id
-            #     province_id = province_id,
-            #     city_id = city_id,
-            #     district_id = district_id,
-            #     place =place,
-            #     mobile =mobile,
-            #     tel = tel,
-            #     email = email,
-            #     # is_deleted = 有默认值
-            # )
-
             address = Address.objects.create(
                 user=request.user,
                 title=receiver,
@@ -123,7 +201,7 @@ class AddressCreateView(LoginRequiredJSONMixin,View):
         }
 
         # 响应更新地址结果
-        return JsonResponse({'code': '0', 'errmsg': '更新地址成功', 'address': address_dict})
+        return JsonResponse({'code': '0', 'errmsg': '新增地址成功', 'address': address_dict})
 
 
 class AddressView(LoginRequiredMixin,View):
@@ -154,7 +232,7 @@ class AddressView(LoginRequiredMixin,View):
 
         context={
             'default_address_id': user.default_address_id,
-            'address': address_list
+            'address': address_list,
         }
         return render(request,'user_center_site.html',context)
 
