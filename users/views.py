@@ -31,6 +31,61 @@ class LoginRequiredJSONMixin(LoginRequiredMixin):
         # 响应json数据
         return JsonResponse({'code':'406','errmsg':'用户未登录'})
 
+
+
+#修改密码
+class ChangePasswordView(LoginRequiredJSONMixin,View):
+    def get(self, request):
+        # 展示修改密码的界面
+        return render(request, 'user_center_pass.html')
+
+    """修改密码"""
+
+    def post(self,request):
+        #接收参数
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        new_password2 = request.POST.get('new_password2')
+
+
+        #校验参数
+        if not all([old_password,new_password,new_password2]):
+            return HttpResponseForbidden('缺少必传参数')
+        try:
+            #验证原始密码是否正确
+            if not request.user.check_password(old_password):
+                return HttpResponseForbidden('密码不正确')
+        except Exception as e:
+            return HttpResponseForbidden('密码错误')
+
+        #校验新密码
+        if not re.match(r'^[0-9A-Za-z]{8,20}$', new_password):
+            return HttpResponseForbidden('密码最少8位，最长20位')
+        if new_password != new_password2:
+            return HttpResponseForbidden('两次输入的密码不一致')
+
+
+        # 修改密码
+        try:
+            request.user.set_password(new_password)
+            request.user.save()
+
+            return render(request,'user_center_pass.html',{'errmsg':'修改密码成功'})
+
+        except Exception as e:
+
+            return render(request,'user_center_pass.html', {'errmsg':'修改密码失败'})
+
+
+        # 清理状态保持信息
+        logout(request)
+        response = redirect('/login')
+        response.delete_cookie('username')
+
+        # 响应密码修改结果：重定向到登录界面
+        return response
+
+
 class DefaultAddressView(LoginRequiredJSONMixin,View):
     def put(self,request,address_id):
         # 设置默认地址
@@ -42,6 +97,28 @@ class DefaultAddressView(LoginRequiredJSONMixin,View):
             return JsonResponse({'code': '409', 'errmsg': '无法设置为默认地址'})
 
         return JsonResponse({'code': '0', 'errmsg': '设置默认地址成功'})
+
+
+
+class UpdateTitleAddressView(View):
+    #更新地址标题
+    def put(self,request,address_id):
+        #接收title参数
+        json_dict=json.loads(request.body.decode())
+        title=json_dict.get('title')
+        #校验参数
+        if not title:
+            return HttpResponseForbidden('缺少需要修改的标题')
+        else:
+            try:
+                #查询当前地址对象，更新地址标题
+                address=Address.objects.get(id=address_id)
+                address.title=title
+                address.save()
+            except Exception as e:
+                return JsonResponse({'code': '409', 'errmsg': '修改标题错误'})
+
+        return JsonResponse({'code': '0', 'errmsg': '地址标题修改成功'})
 
 
 class UpdateDestroyAddressView(LoginRequiredJSONMixin,View):

@@ -190,8 +190,8 @@
             <ul>
                 <li><a href="/info">·个人信息</a></li>
                 <li><a href="/address" class="active">·收货地址</a></li>
-                <li><a href="user_center_order.html">·全部订单</a></li>
-                <li><a href="user_center_pass.html">·修改密码</a></li>
+                <li><a href="/order">·全部订单</a></li>
+                <li><a href="/changepassword">·修改密码</a></li>
             </ul>
         </div>
 
@@ -203,10 +203,21 @@
             </div>
             <div class="site_con" v-for="(address, index) in addresses">
                 <div class="site_title">
-                    <h3>[[ address.title ]]</h3>
-                    <a href="javascript:;" class="edit_icon"></a>
-                    <em v-if="address.id==default_address_id">默认地址</em>
-                    <em v-else><button @click="delete_address(index)" class="del_site">x</button></em>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <button @click="show_edit_title(index)">编辑题目</button>
+                    <div v-if="edit_title_index===index">
+                        <input v-model="new_title" type="text" name="">
+                        <input @click="save_title(index)" type="button" name="" value="保 存">
+                        <input @click="cancel_title(index)" type="reset" name="" value="取 消">
+                    </div>
+                    <div>
+                        <h3>[[ address.title ]]</h3>
+                        <em v-if="address.id==default_address_id">默认地址</em>
+                        <em v-else><button @click="delete_address(index)" class="del_site">x</button></em>
+                    </div>
                 </div>
                 <ul class="site_list">
                     <li><span>收货人：</span><b>[[ address.receiver ]]</b></li>
@@ -239,7 +250,6 @@
         <div class="site_con site_pop">
             <div class="site pop title">
                 <h3>编辑收货地址</h3>
-                <!--                <a @click="is_show_edit=false">x</a>-->
             </div>
             <form>
                 <div class="form_group">
@@ -464,6 +474,46 @@
                     .catch(error => {
                     console.log(error.response);
                 })
+            },
+
+            show_edit_title(index){
+                this.edit_title_index=index;
+            },
+
+            cancel_title(){
+                this.edit_title_index='';
+                this.new_title='';
+            },
+
+            // 修改地址title
+            save_title(index){
+                if (!this.new_title) {
+                    alert("请填写标题后再保存！");
+                } else {
+                    let url = '/address/title/' + this.addresses[index].id +'/' ;
+                    axios.put(url, {
+                        title: this.new_title
+                    }, {
+                        headers: {
+                            'X-CSRFToken':this.getCookie('csrftoken')
+                        },
+                        responseType: 'json'
+                    })
+                        .then(response => {
+                            if (response.data.code == '0') {
+                                // 更新地址title
+                                this.addresses[index].title = this.new_title;
+                                this.cancel_title();
+                            } else if (response.data.code == '406') {
+                                location.href = '/login/?next=/address/';
+                            } else {
+                                alert(response.data.errmsg);
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error.response);
+                        })
+                }
             },
 
             // 获取省份数据
