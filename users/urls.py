@@ -11,10 +11,15 @@ urlpatterns = [
     re_path(r'^info/', views.UserinfoView.as_view(), name='info'),
     re_path(r'^cart/', views.UserCartView.as_view(), name='cart'),
     re_path(r'^order/', views.UserOrderView.as_view(), name='order'),
+
+    re_path(r'^change/', views.ChangePasswordView.as_view(), name='change_password'),
+
     re_path(r'^emails/', views.EmailView.as_view(), name='email'),
     re_path(r'^verification/$', views.VerifyEmailView.as_view(), name='verify_email'),
     re_path(r'^address/$', views.AddressView.as_view(), name='address'),
     re_path(r'^address/(?P<address_id>\d+)/$', views.UpdateDestroyAddressView.as_view(), name='address_update'),
     re_path(r'^address/default/(?P<address_id>\d+)/$', views.DefaultAddressView.as_view(), name='address_default'),
+    re_path(r'^address/title/(?P<address_id>\d+)/$', views.UpdateTitleAddressView.as_view(), name='address_title'),
     re_path(r'^addresses/create/$', views.AddressCreateView.as_view(), name='address_create'),
+
 ]
