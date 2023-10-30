@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>修改密码</title>
+    <style>
+        #app{
+            background-color: #faf8f8;
+        }
+        .pass_form {
+            border: 1px solid #e7dcdc; /* 添加一个灰色边框 */
+            padding: 2px; /* 添加内边距，以使内容与边框之间有一些间距 */
+        }
+        ul, ol {
+            list-style: none; /* 去掉默认列表标记 */
+            padding: 0; /* 去掉列表的内边距 */
+            margin: 0; /* 去掉列表的外边距 */
+        }
+        input {
+            width: 200px; /* 设置宽度为200像素 */
+            height: 20px; /* 设置高度为30像素 */
+            margin: 5px; /* 设置输入框之间的外边距 */
+        }
+        label {
+            display: inline-block;
+            width: 100px; /* 设置固定宽度，根据需要调整大小 */
+        }
+        button {
+            margin-right: 20px;
+            width: 60px;
+            height: 30px;
+            border-color:#f60505;
+            background-color: #F60505FF;
+            color: #f5ecec;
+
+        }
+    </style>
+</head>
+<body>
+<div id="sidebar">
+    <h1>用户中心</h1>
+    <ul>
+        <li><a href="/info">个人信息</a></li>
+        <li><a href="/address">收货地址</a></li>
+        <li><a href="/order">全部订单</a></li>
+        <li><a href="/change">修改密码</a></li>
+    </ul>
+</div>
+
+<div id="app">
+    <div class="pass_form clearfix">
+        <form method="post" class="pass_form" @on_submit="on_submit">
+            {{csrf_input}}
+            <ul>
+                <li>
+                    <label>当前密码：</label>
+                    <input type="password" v-model="old_password" @blur="check_old_password" name="old_password"
+                           id="old_password">
+                    <span class="error_tip" v-show="error_old_password">请输入8-20位的密码</span>
+                </li>
+                <li>
+                    <label>新密码: </label>
+                    <input type="password" v-model="new_password" @blur="check_new_password" name="new_password"
+                           id="new_password">
+                    <span class="error_tip" v-show="error_new_password">请输入8-20位的密码</span>
+                </li>
+                <li>
+                    <label>确认新密码：</label>
+                    <input type="password" v-model="new_password2" @blur="check_new_password2" name="new_password2"
+                           id="new_password2">
+                    <span class="error_tip" v-show="error_new_password2">两次输入的密码不一致</span>
+                    <div></div>
+                    <span class="error_tip" v-show="error_password">{{errmsg}}</span>
+                </li>
+            </ul>
+            <button @click="check">确定</button>
+            <button @click.prevent="clear_data">取消</button>
+        </form>
+    </div>
+</div>
+</body>
+
+
+<script>
+    const { createApp, ref } = Vue;
+
+    const app = createApp ({
+        delimiters: ['[[', ']]'],
+        data() {
+            return{
+                old_password:'',
+                new_password:'',
+                new_password2:'',
+
+                error_old_password: false,
+                error_new_password: false,
+                error_new_password2: false,
+                error_password:true,
+                check:false,
+            };
+        },
+
+        methods: {
+
+            getCookie(name) {
+                const cookies = document.cookie.split('; ');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].split('=');
+                    if (cookie[0] === name) {
+                        return cookie[1];
+                    }
+                }
+                return null;
+            },
+
+            //校验旧密码的参数是否在8到20之间
+            check_old_password() {
+                let regex = /[0-9a-zA-Z]{8,20}$/;
+                if (regex.test(this.old_password)) {
+                    this.error_old_password = false;
+                } else {
+                    this.error_old_password_message='请输入8~20的密码';
+                    this.error_old_password = true;
+                }
+            },
+
+            //校验新密码的参数是否在8到20之间
+            check_new_password() {
+                let regex = /[0-9a-zA-Z]{8,20}$/;
+                if (regex.test(this.new_password)) {
+                    this.error_new_password = false;
+                } else {
+                    this.error_new_password = true;
+                    this.change_pwd_errmsg =response.data.errmsg;
+                }
+            },
+
+            // 密码确认
+            check_new_password2() {
+                if (this.new_password !== this.new_password2) {
+                    this.error_new_password2 = true;
+                } else {
+                    this.error_new_password2 = false;
+                }
+            },
+
+            check(){
+                this.check=true;
+            },
+
+            clear_data() {
+
+                this.old_password = '';
+                this.new_password = '';
+                this.new_password2 = '';
+            },
+
+            on_submit(){
+                if (this.error_old_password == false && this.error_new_password==false && this.error_new_password2==false && this.check==true)
+                {
+                    let url='/change/';
+                    axios.post(url, {
+                        responseType:'json'
+                    })
+                        .then(response => {
+                        this.error_password=true;
+
+                    })
+                        .catch(error =>{
+                        console.log(error.response);
+                    })
+                }
+            },
+        }
+    });
+
+    app.mount("#app");
+</script>
+</html>
+
+
