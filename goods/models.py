@@ -2,6 +2,19 @@ from django.db import models
 from users.utils import BaseModel
 
 
+#将mysql中的已存在的表格引入到django模型中
+class ImageStorage(BaseModel):
+    title=models.CharField(max_length=20,verbose_name='图片名称')
+    image_data=models.BinaryField(max_length=256,verbose_name='二进制图片',null=True)
+
+    class Meta:
+        db_table = 'tb_image_data'
+        verbose_name = '二进制图片'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.title
+
 
 class GoodsCategory(BaseModel):
     """商品类别,自关联，类似于省市级的表"""
@@ -96,7 +109,7 @@ class SKU(BaseModel):
     sales = models.IntegerField(default=0, verbose_name='商品销量')
     comments = models.IntegerField(default=0, verbose_name='商品评价数')
     is_launched = models.BooleanField(default=True, verbose_name='商品是否上架销售')
-    default_image_url = models.CharField(max_length=200, default='', null=True, blank=True, verbose_name='商品默认图片')
+    default_image_url = models.ImageField(max_length=200, default='', null=True, blank=True, verbose_name='商品默认图片')
 
     class Meta:
         db_table = 'tb_sku'
@@ -163,3 +176,17 @@ class SKUSpecification(BaseModel):
     def __str__(self):
         return '%s: %s - %s' % (self.sku, self.spec.name, self.option.value)
 
+
+
+
+# docker run -d --name tracker -p 22122:22122 -e GROUP_NAME=group1 -v C:/Users/KDG/meiduo/var/fdfs/tracker:/var/fdfs delron/fastdfs tracker
+# docker run -d --name storage -p 23000:23000 -e IP=localhost -e TRACKER_SERVER=192.168.0.4:22122 -v C:/Users/KDG/meiduo/var/fdfs/storage:/var/fdfs delron/fastdfs storage
+#
+# 与docker建立连接
+# from fdfs_client.client import Fdfs_client
+# import mutagen
+# import requests
+#
+# client=Fdfs_client('C:/Users/KDG/meiduo/fastdfs/client.conf')
+# ret = client.upload_by_filename('C:/Users/KDG/Desktop/cat.jpeg')
+# print(ret)

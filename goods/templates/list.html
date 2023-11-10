@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../../../../static/simplePagination.css"></link>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>  <!--导入ajax，进行异步请求，局部刷新数据-->
+    <!--    由于静态文件存储在static路由下，所以通过后退位置../-->
+    <script src="../../../../static/jquery.min.js"></script>
+    <script src="../../../../static/jquery.simplePagination.js"></script>
+
+    <meta charset="UTF-8">
+    <title>商品列表</title>
+
+</head>
+
+<body>
+
+<div id="app">
+    <div class="header_con">
+        <div class="header" >
+            <div class="welcome fl">欢迎来到美多商城！</div>
+            <div class="fr">
+                <div v-if="username" class="login_btn fl">
+                    欢迎您：<em>[[ username]]</em>
+                    <span>|</span>
+                    <a href="/logout">退出</a>
+                </div>
+                <div v-else class="login_btn fl">
+                    <a href="/login">登录</a>
+                    <span>|</span>
+                    <a href="/register">注册</a>
+                </div>
+                <div class="user_link fl">
+                    <span>|</span>
+                    <a href="/info">用户中心</a>
+                    <span>|</span>
+                    <a href="cart.html">我的购物车</a>
+                    <span>|</span>
+                    <a href="user_center_order.html">我的订单</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="search_bar clearfix">
+        <a href="#" class="logo fl"><img src="#"></a>
+        <div class="search_wrap fl">
+            <form method="get" action="/search/" class="search_con">
+                <input type="text" class="input_text fl" name="q" placeholder="搜索商品">
+                <input type="submit" class="input_btn fr" name="" value="搜索">
+            </form>
+            <ul class="search_suggest fl">
+                <li><a href="#">索尼微单</a></li>
+                <li><a href="#">优惠15元</a></li>
+                <li><a href="#">美妆个护</a></li>
+                <li><a href="#">买2免1</a></li>
+            </ul>
+        </div>
+        <div class="guest_cart fr">
+            <a href="cart.html" class="cart_name fl">我的购物车</a>
+            <div class="goods_count fl" id="show_count">2</div>
+            <ul class="cart_goods_show">
+                <li>
+                    <img src="#" alt="商品图片">
+                    <h4>华为 HUAWEI P10 PLus 6GB+64GB 钻雕金 移动联通电信4G手机 双卡双待</h4>
+                    <div>1</div>
+                </li>
+                <li>
+                    <img src="#" alt="商品图片">
+                    <h4>Apple iPhoneX 646B 深空灰色移动联通电信46手机</h4>
+                    <div>1</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="navbar_con">
+        <div class="navbar">
+            <div class="sub_menu_con fl">
+                <div><h3>商品信息</h3>
+                    <ul class="sub_menu">
+                        {% for group in categories %}
+                        <li>
+                            <div class="level1">
+                                {% for channel in group.channels %}
+                                <a href="{{ channel.url }}" @mouseover="toggleShow1(true)"
+                                   @mouseout="toggleShow1(false)">{{ channel.name }}</a>
+                                {% endfor %}
+                            </div>
+
+                            <div class="level2" v-show="show1">
+                                {% for cat2 in group.sub_cats %}
+                                <div class="list_group">
+                                    <div class="group_name fl" @mouseover="toggleShow2(true)"
+                                         @mouseout="toggleShow2(false)">{{ cat2.name }} &gt;
+                                    </div>
+
+                                    <div class="group_detail fl" v-show="show2">
+                                        {% for cat3 in cat2.sub_cats %}
+                                        <a href='#' @mouseover="toggleShow3(true)" @mouseout="toggleShow3(false)">
+                                            {{cat3.name }}</a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <ul class="navlist fl">
+            <li><a href="">首页</a></li>
+            <li class="interval">|</li>
+            <li><a href="">真划算</a></li>
+            <li class="interval">|</li>
+            <li><a href="">抽奖</a></li>
+        </ul>
+    </div>
+
+<div class="breadcrumb">
+    <a href="#">{{breadcrumb.cat1.name}}</a>
+    <span>|</span>
+    <a href="#">{{breadcrumb.cat2.name}}</a>
+    <span>|</span>
+    <a href="#">{{breadcrumb.cat3.name}}</a>
+</div>
+
+<div class="r_wrap fr clearfix">
+    <div class="sort_bar">
+        <a href="{% url 'goods:goodslist' category_id=category_id page_num=1 sort=sort %}" {% if sort == "default" %}class="active"{% endif %}>默认</a>
+        <a href="{% url 'goods:goodslist' category_id=category_id page_num=1 sort=sort %}" {% if sort == "price" %}class="active"{% endif %}>价格</a>
+        <a href="{% url 'goods:goodslist' category_id=category_id page_num=1 sort=sort %}" {% if sort == "hot" %}class="active"{% endif %}>销量</a>
+    </div>
+</div>
+
+<div>
+<ul class="goods_type_list clearfix">
+    {% for sku in page_skus %}
+    <li>
+<!--        <a href="detail.html"><img src="{{sku.default_image_url}}"></a>-->
+        <h4><a href="detail.html">{{sku.name}}</a> </h4>
+        <div class="operate">
+            <span class="price">{{sku.price}}</span>
+            <span class="unit">台</span>
+            <a href="#" class="add_goods" title="加入购物车"></a>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+</div>
+
+<!--设置分页-->
+<div class="pagination" id="pageDIV">
+
+</div>
+</div>
+
+
+
+<script type="text/javascript">
+    let category_id = "{{ category.id }}";
+
+        $(function() {
+        // 为具有指定选择器的元素设置分页
+        $('#pageDIV').pagination({
+            currentPage:{{page_num}},
+            pages:{{total_page}},
+            itemsOnPage:5,
+            prevText:'上一页',
+            nextText:'下一页',
+            cssStyle: 'light-theme',
+            onPageClick(getCurrentPage){
+                location.href='/list/{{category_id}}/'+getCurrentPage+'/?sort={{sort}}'
+        },
+        })
+    });
+
+    //提取cookie
+    function getCookie(name){
+        let r= document.cookie.match('\\b'+name+'=([^;]*)\\b')
+        return r ? r[1]:undefined;
+    };
+
+</script>
+</body>
+
+
+
+
+
+<script>
+
+    const { createApp, ref } = Vue ;
+
+    const app = createApp({
+        delimiters:['[[',']]'],
+        data() {
+            return {
+                show1:false,
+                show2:false,
+
+                username:getCookie('username'),
+
+            };
+        },
+
+
+        methods: {
+            //监听鼠标是否停留在当前类别位置
+           toggleShow1(isVisible) {
+                this.show1= isVisible;
+            },
+
+            toggleShow2(isVisible) {
+                this.show1= isVisible;
+                this.show2 = isVisible;
+            },
+
+              toggleShow3(isVisible) {
+                this.show1 = isVisible;
+                this.show2 = isVisible;
+            }
+        },
+    });
+
+    app.mount("#app");
+
+</script>
+
+
+</html>
