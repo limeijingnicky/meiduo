@@ -25,7 +25,7 @@ class Content(BaseModel):
     status=models.BooleanField(default=True,verbose_name='是否显示')
 
     class Meta:
-        db_table='tb_category'
+        db_table='tb_content'
         verbose_name='广告内容'
         verbose_name_plural=verbose_name
     def __str__(self):
