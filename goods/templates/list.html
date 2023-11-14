@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
+
     <link rel="stylesheet" type="text/css" href="../../../../static/simplePagination.css"></link>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>  <!--导入ajax，进行异步请求，局部刷新数据-->
     <!--    由于静态文件存储在static路由下，所以通过后退位置../-->
     <script src="../../../../static/jquery.min.js"></script>
     <script src="../../../../static/jquery.simplePagination.js"></script>
-=======
+
     <link rel="stylesheet" type="text/css" href="../../../static/simplePagination.css"></link>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>  <!--导入ajax，进行异步请求，局部刷新数据-->
     <!--    由于静态文件存储在static路由下，所以通过后退位置../-->
     <script src="../../../static/jquery.min.js"></script>
     <script src="../../../static/jquery.simplePagination.js"></script>
->>>>>>> origin/mj
 
     <meta charset="UTF-8">
     <title>商品列表</title>
@@ -28,11 +27,11 @@
 
 <div id="app">
     <div class="header_con">
-<<<<<<< HEAD
+
         <div class="header" >
-=======
+
         <div class="header" v-cloak>
->>>>>>> origin/mj
+
             <div class="welcome fl">欢迎来到美多商城！</div>
             <div class="fr">
                 <div v-if="username" class="login_btn fl">
@@ -132,11 +131,9 @@
             <li><a href="">抽奖</a></li>
         </ul>
     </div>
-<<<<<<< HEAD
 
-=======
 </div>
->>>>>>> origin/mj
+
 <div class="breadcrumb">
     <a href="#">{{breadcrumb.cat1.name}}</a>
     <span>|</span>
@@ -157,11 +154,11 @@
 <ul class="goods_type_list clearfix">
     {% for sku in page_skus %}
     <li>
-<<<<<<< HEAD
+
 <!--        <a href="detail.html"><img src="{{sku.default_image_url}}"></a>-->
-=======
+
         <a href="detail.html"><img src="{{sku.default_image_url}}"></a>
->>>>>>> origin/mj
+
         <h4><a href="detail.html">{{sku.name}}</a> </h4>
         <div class="operate">
             <span class="price">{{sku.price}}</span>
@@ -177,19 +174,12 @@
 <div class="pagination" id="pageDIV">
 
 </div>
-<<<<<<< HEAD
+
 </div>
 
 
 
 <script type="text/javascript">
-    let category_id = "{{ category.id }}";
-
-=======
-
-
-<script type="text/javascript">
->>>>>>> origin/mj
         $(function() {
         // 为具有指定选择器的元素设置分页
         $('#pageDIV').pagination({
@@ -229,23 +219,11 @@
                 show1:false,
                 show2:false,
 
-<<<<<<< HEAD
                 username:getCookie('username'),
 
             };
         },
 
-
-=======
-
-
-                username:getCookie('username'),
-
-
-            };
-        },
-
->>>>>>> origin/mj
         methods: {
             //监听鼠标是否停留在当前类别位置
            toggleShow1(isVisible) {
@@ -260,16 +238,9 @@
               toggleShow3(isVisible) {
                 this.show1 = isVisible;
                 this.show2 = isVisible;
-<<<<<<< HEAD
             }
         },
-=======
-            },
 
-
-
-        }
->>>>>>> origin/mj
     });
 
     app.mount("#app");
