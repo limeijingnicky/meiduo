@@ -66,6 +66,26 @@
         button.cancel {
             background-color: #aaa;
         }
+        .has_view_list {
+            display: flex;
+            justify-content: left;
+        }
+
+        .has_view_list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .operate {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            text-align: left;
+            margin: 10px; /* Adjust the margin as needed */
+        }
+        .s{
+            margin: 10px;
+        }
     </style>
 </head>
 <body>
@@ -74,7 +94,7 @@
     <ul>
         <li><a href="">个人信息</a></li>
         <li><a href="/address">收货地址</a></li>
-        <li><a href="/order">全部订单</a></li>
+        <li><a href="/orders">全部订单</a></li>
         <li><a href="/change">修改密码</a></li>
     </ul>
 </div>
@@ -116,9 +136,9 @@
             <li><span>手机号码：</span>[[mobile]]</li>
             <li>
                 <span>Email:</span>
-                <div v-if="set_email" >
+                <div v-if="set_email">
                     <input v-model="email" @blur="check_email" type="email" name="email">
-                    <input @click="save_email" type="button" name="" value="保存" >
+                    <input @click="save_email" type="button" name="" value="保存">
                     <input @click="cancel_email" type="button" name="" value="取消">
                     <div v-show="error_email" class="error_email_tip">邮箱格式错误</div>
                 </div>
@@ -129,6 +149,19 @@
                     <div v-else>
                         邮箱待验证
                     </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <!--    最近浏览-->
+    <h3>最近浏览</h3>
+    <div class="has_view_list">
+        <ul>
+            <li v-for="sku in histories" class="operate">
+                <h4><a :href="sku.url">[[sku.name]]</a></h4>
+                <div>
+                    <span>¥[[sku.price]]</span>
+                    <span class="s">已售[[sku.sales]]</span>
                 </div>
             </li>
         </ul>
@@ -165,10 +198,11 @@
             };
         },
         mounted() {
-//            将字符串转换为布尔值
+            //            将字符串转换为布尔值
             this.email_active = (this.email_active === 'true' || this.email_active === 'True') ? true : false;
-//            如果邮箱未激活，则显示出input项目栏
+            //            如果邮箱未激活，则显示出input项目栏
             this.set_email =  !this.email_active;
+            this.browse_histories();
         },
         methods: {
             check_email() {
@@ -208,7 +242,7 @@
                         if (response.data.code === '0') {
                             this.set_email = false;
                             this.send_email_btn_disabled = true;
-//                            this.send_email_tip = '已发送邮件';
+                            //                            this.send_email_tip = '已发送邮件';
                         } else if (response.data.error.code === '406') {
                             location.href = '/login/?next=/info/';
                         } else {
@@ -220,7 +254,23 @@
                     });
                 }
             },
-        },
+            //            请求浏览历史记录
+            browse_histories(){
+                let url='/browse_histories/';
+                axios.get(url, {
+                    respoonseType:'json'
+                })
+                    .then(response => {
+                    this.histories = response.data.sku;
+                    for(let i=0; i<this.histories.length;i++){
+                        this.histories[i].url = '/detail/'+this.histories[i].id+'/';
+                    }
+                })
+                    .catch(error => {
+                    console.log(error.response);
+                })
+            },
+        }
     });
 
     app.mount("#app");

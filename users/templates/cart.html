@@ -3,90 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <title>购物车</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
+        /* 设置购物车容器的边框样式 */
+        .cart-container {
+            border: 1px solid #ccc; /* 外边框样式 */
+            padding: 10px; /* 可选：添加一些内边距以增加外观 */
+        }
+        .input-box{
+            width: 30px;
+            height: 20px;
+            text-align: center;
+        }
+        /* 设置购物车列表的宽度和布局 */
+        .cart_list_th, .cart_list_td, .settlements {
+            list-style: none;
             padding: 0;
+            margin: 0;
+            display: flex;
         }
 
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
+        /* 设置每一列的宽度和文本对齐方式 */
+        .cart_list_th li, .cart_list_td li, .settlements li {
+            flex: 1;
             text-align: center;
         }
 
-        #cart {
-            margin: 20px;
+        /* 设置总计栏的额外样式 */
+        .settlements .col03 {
+            flex: 2; /* 使合计栏更宽 */
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        /* 添加一些样式以美化页面，这只是一个例子，你可以根据需要自定义 */
+        .cart_list_td li, .settlements li {
+            padding: 10px;
+            margin: 5px;
+            border-bottom: 1px solid #ccc;
         }
 
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        th {
-            background-color: #333;
-            color: white;
-        }
-
-        .cart-actions {
-            text-align: right;
-        }
-
-        .total-price {
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>购物车</h1>
-    </header>
-    <div id="cart">
-        <table>
-            <thead>
-                <tr>
-                    <th>商品名称</th>
-                    <th>价格</th>
-                    <th>数量</th>
-                    <th>小计</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>商品 1</td>
-                    <td>$10.00</td>
-                    <td><input type="number" value="1" min="1"></td>
-                    <td>$10.00</td>
-                    <td><button>删除</button></td>
-                </tr>
-                <tr>
-                    <td>商品 2</td>
-                    <td>$15.00</td>
-                    <td><input type="number" value="2" min="1"></td>
-                    <td>$30.00</td>
-                    <td><button>删除</button></td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="cart-actions">
-            <p class="total-price">总价: $40.00</p>
-            <button>结算</button>
+<div id="app">
+    <div class="header_con">
+        <div class="header" v-cloak>
+            <div class="welcome fl">欢迎来到美多商城！</div>
+            <div class="fr">
+                <div v-if="username" class="login_btn fl">
+                    欢迎您：<em>[[ username]]</em>
+                    <span>|</span>
+                    <a href="/logout">退出</a>
+                </div>
+                <div v-else class="login_btn fl">
+                    <a href="/login">登录</a>
+                    <span>|</span>
+                    <a href="/register">注册</a>
+                </div>
+                <div class="user_link fl">
+                    <span>|</span>
+                    <a href="/info">用户中心</a>
+                    <span>|</span>
+                    <a href="/carts">我的购物车</a>
+                    <span>|</span>
+                    <a href="/order">我的订单</a>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!--    渲染购物车里的全部商品-->
+    <div class="cart-container">
+        <div class="total_count">全部商品<em>[[ total_count ]]</em>件</div>
+        <ul class="cart_list_th clearfix">
+            <li class="col01">商品名称</li>
+            <li class="col02">商品价格</li>
+            <li class="col03">数量</li>
+            <li class="col04">小计</li>
+            <li class="col05">操作</li>
+        </ul>
+        <ul class="cart_list_td clearfix" v-for="(cart_sku,index) in carts" v-cloak>
+            <li class="col01"><input type="checkbox" name="" v-model="cart_sku.selected" @change="on_select(index)"></li>
+            <!--<li class="col02"><img :src="cart_sku.default_image_url"></li>-->
+            <li class="col02">[[ cart_sku.name ]]</li>
+            <li class="col05">[[ cart_sku.price ]]元</li>
+            <li class="col06">
+                <div class="num_add">
+                    <button @click="on_minus(index)" class="minus fl">-</button>
+                    <input class="input-box" v-model="cart_sku.count" @blur="on_input(index)" type="text" class="num">
+                    <button @click="on_add(index)" class="add fl">+</button>
+                </div>
+            </li>
+            <li class="col07">[[ cart_sku.amount ]]元</li>
+            <li class="col08"><a @click="on_delete(index)">删除</a></li>
+        </ul>
+        <ul class="settlements" v-cloak>
+            <li class="col01"><input type="checkbox" name="" v-model="selected_all" @change="isallselected"></li>
+            <li class="col02">全选</li>
+            <li class="col03">合计(不含运费):<span>￥</span><em>[[ total_selected_amount ]]</em><br></li>
+            <li class="col04">共计[[ total_selected_count ]]件商品</li>
+            <li class="col04"><a href="/orders/settlement">去结算</a></li>
+        </ul>
+    </div>
+</div>
 </body>
+
+
+<script>
+    let carts={{cart_skus | safe}}
+    //提取cookie
+    function getCookie(name){
+        let r= document.cookie.match('\\b'+name+'=([^;]*)\\b')
+        return r ? r[1]:undefined;
+    };
+
+
+</script>
+
+
+<script>
+
+    const { createApp, ref } = Vue ;
+
+    const app = createApp({
+        delimiters:['[[',']]'],
+        data() {
+            this.username=getCookie('username');
+            this.carts = JSON.parse(JSON.stringify(carts));
+
+            return {
+                total_count:0,
+                total_selected_count:0,
+                total_selected_amount:0,
+                carts_tmp:[],
+                selected_all:false
+            };
+        },
+
+        mounted(){
+
+            //        初始化购物车数据
+            this.render_carts();
+            //    计算商品总数量
+            this.compute_total_count();
+            //    计算被勾选的商品总数量和总金额
+            this.compute_total_selected_amount();
+            this.on_selected_all();
+        },
+        methods: {
+            on_selected_all(){
+                this.selected_all = this.carts.every(cart => cart.selected);
+            },
+
+
+            //            初始化购物车数据
+            render_carts(){
+                //            渲染界面
+                this.carts = JSON.parse(JSON.stringify(carts));
+                for(let i=0; i<this.carts.length;i++){
+                    if(this.carts[i].selected=='True'){
+                        this.carts[i].selected=true;
+                    }else{
+                        this.carts[i].selected=false;
+                    }
+                };
+                //    手动记录购物车的初始值，用于更新购物车失效时还原商品数量
+                this.carts_tmp = JSON.parse(JSON.stringify(carts));
+            },
+            //                    计算商品的总数量：无论是否勾选
+            compute_total_count(){
+                for(let i=0;i<this.carts.length;i++){
+                    this.total_count=this.total_count+parseInt(this.carts[i].count);
+                }
+            },
+            compute_total_selected_amount(){
+                for (let i = 0; i < this.carts.length; i++) {
+                    if (this.carts[i].selected) {
+                        this.total_selected_count += parseInt(this.carts[i].count);
+                        this.total_selected_amount += this.carts[i].price * this.carts[i].count;
+                    }
+                }
+            },
+            on_add(index) {
+                this.carts[index].count++;
+                this.updateCartCount(index, this.carts[index].count);
+            },
+            on_minus(index) {
+                this.carts[index].count--;
+                this.updateCartCount(index, this.carts[index].count);
+            },
+            updateCartCount(index) {
+                axios.put('/carts/', { sku_id:this.carts[index].id,count: this.carts[index].count, selected:this.carts[index].selected },{
+                    headers:{
+                        'X-CSRFToken': getCookie('csrfttoken')
+                    },
+                    responseType:'json'
+                })
+                    .then(response => {
+                    if(response.data.code=='0'){
+                        this.carts[index]=response.data.cart_sku
+                        console.log(response.data);
+                    }else{
+                        console.log('修改失败');
+                    }
+                })
+                    .catch(error => {
+                    console.log(error.response);
+                });
+            },
+            on_select(index){
+                axios.put('/carts/', { sku_id:this.carts[index].id,count: this.carts[index].count, selected: this.carts[index].selected },{
+                    headers:{
+                        'X-CSRFToken': getCookie('csrfttoken')
+                    },
+                    responseType:'json'
+                })
+                    .then(response => {
+                    if(response.data.code=='0'){
+                        this.carts[index]=response.data.cart_sku
+                        console.log(response.data);
+                    }else{
+                        console.log('修改失败');
+                    }
+                })
+                    .catch(error => {
+                    console.log(error.response);
+                });
+            },
+//            全选被点击时，所有selceled变为true
+            isallselected(){
+                for(let i=0;i<this.carts.length;i++){
+                 axios.put('/carts/', { sku_id:this.carts[i].id,count: this.carts[i].count, selected: true },{
+                    headers:{
+                        'X-CSRFToken': getCookie('csrfttoken')
+                    },
+                    responseType:'json'
+                })
+                    .then(response => {
+                    if(response.data.code=='0'){
+                        this.carts[i]=response.data.cart_sku
+                        console.log(response.data);
+                    }else{
+                        console.log('修改失败');
+                    }
+                })
+                    .catch(error => {
+                    console.log(error.response);
+                });}
+            },
+            on_delete(index){
+                axios.delete('/carts/',{
+                    data:{
+                        sku_id:this.carts[index].id
+                        },
+                    headers:{
+                        'X-CSRFToken': getCookie('csrfttoken')
+                    },
+                    responseType:'json'
+                    })
+                     .then(response => {
+                        if(response.data.code=='0'){
+                            console.log(response.data.errmsg);
+                        }else{
+                            console.log('修改失败');
+                        }
+                    })
+                    .catch(error => {
+                    console.log(error.response);
+                });
+            },}
+    });
+    app.mount("#app");
+</script>
+
 </html>

@@ -2,6 +2,7 @@ from django.db import models
 from users.utils import BaseModel
 
 
+
 #将mysql中的已存在的表格引入到django模型中
 class ImageStorage(BaseModel):
     title=models.CharField(max_length=20,verbose_name='图片名称')
@@ -177,7 +178,15 @@ class SKUSpecification(BaseModel):
         return '%s: %s - %s' % (self.sku, self.spec.name, self.option.value)
 
 
+class  GoodsVisitCount(BaseModel):
+    category = models.ForeignKey(GoodsCategory,on_delete=models.CASCADE,verbose_name='商品分类')
+    count = models.IntegerField(verbose_name='访问量',default=0)
+    date = models.DateField(auto_now_add=True,verbose_name='统计日期')
 
+    class Meta:
+        db_table = 'tb_goods_visit'
+        verbose_name = '统计商品访问量'
+        verbose_name_plural = verbose_name
 
 # docker run -d --name tracker -p 22122:22122 -e GROUP_NAME=group1 -v C:/Users/KDG/meiduo/var/fdfs/tracker:/var/fdfs delron/fastdfs tracker
 # docker run -d --name storage -p 23000:23000 -e IP=localhost -e TRACKER_SERVER=192.168.0.4:22122 -v C:/Users/KDG/meiduo/var/fdfs/storage:/var/fdfs delron/fastdfs storage
