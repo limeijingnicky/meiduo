@@ -22,4 +22,5 @@ urlpatterns = [
     re_path(r'^address/title/(?P<address_id>\d+)/$', views.UpdateTitleAddressView.as_view(), name='address_title'),
     re_path(r'^addresses/create/$', views.AddressCreateView.as_view(), name='address_create'),
 
+    re_path(r'^browse_histories/$', views.UserBrowseHistory.as_view(), name='history'),
 ]

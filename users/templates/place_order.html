@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>  <!--导入ajax，进行异步请求，局部刷新数据-->
+    <title>美多商城-订单确认</title>
+    <style></style>
+</head>
+<body>
+<div id="app">
+    <div class="header_con">
+        <div class="header" v-cloak>
+            <div class="welcome fL">欢迎来到美多商城！</div>
+            <div class="fr">
+                <div v-if="username" class="login_btn fl">
+                    欢迎您：<em>[[ username ]]</em>
+                    <span>|</span>
+                    <a href="/logout">退出</a>
+                </div>
+                <div v-else class="login_btn fl">
+                    <a href="/login">登录</a>
+                    <span>|</span>
+                    <a href="/register">注册</a>
+                </div>
+                <div class="user_link fl">
+                    <span>|</span>
+                    <a href="/info">用户中心</a>
+                    <span>|</span>
+                    <a href="/carts">我的购物车</a>
+                    <span>|</span>
+                    <a href="/orders">我的订单</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="search_bar clearfix">
+        <a href="/" class="logo fl">
+            <div class='search_wrap fl'>
+                <form method="get" action="/search/" class="search_con">
+                    <input type="text" class="input_text fl" name="q" placeholder="搜索商品">
+                    <input type="submit" class="input_btn fr" name="" value="搜索">
+                </form>
+                <ul class="search_suggest fl">
+                    <li><a href="#">索尼微单</a></li>
+                    <li><a href="#">优惠15元</a></li>
+                    <li><a href="#">美妆个护</a></li>
+                    <li><a href="#">买2免1</a></li>
+                </ul>
+            </div>
+    </div>
+    <div>
+        <h3>确认收货地址</h3>
+    </div>
+    <div class="footer">
+        <div class="foot_link">
+            <a href="#">关于我们</a>
+            <span>|</span>
+            <a href="#">联系我们</a>
+            <span>|</span>
+            <a href="#">友情链接</a>
+        </div>
+        <p>CopyRight 2016 北京美多商业股份有限公司 All Rights Reserved</p>
+        <p>电话：010-****88R 京ICP奋*＊＊＊＊＊＊8号</P>
+    </div>
+</div>
+</body>
+
+
+<script>
+    const { createApp, ref } = Vue;
+
+    const app = createApp ({
+    delimiters: ['[[', ']]'],
+    data() {
+        this.username=this.getCookie('username');
+        return {
+            order_submitting:false,
+            pay_method:2,
+            nowsite:'',
+            payment_amount:'',
+        };
+    },
+    methods: {
+    getCookie(name) {
+        const cookies = document.cookie.split('; ');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].split('=');
+            if (cookie[0] === name) {
+            return cookie[1];
+            }
+        }
+            return null;
+    },
+    // 提交订单
+    on_order_submit(){
+        if(!this.nowsite){
+         alert('请选择收货地址');
+         return;
+         }
+        if (!this.pay_method){
+         alert('请选择支付方式');
+         return;
+         }
+        if (this.order_submitting==false){
+         this.order_submitting=true;
+         let url='/orders/commit';
+            axios.post(url,{
+                address_id:this.nowsite,
+                pay_method:parseInt(this.pay_method)},
+                {
+                headers:{
+    '               X-CSRFToken':getCookie('csrftoken')
+                },
+                responseType:'json'
+                })
+            .then(response => {
+                this.order_submitting=false;
+                if(response.data.code=='0'){
+                    location.href='/orders/success/?order_id'+response.data.order_id+
+                                    '&payment_amount='+this.payment_amount+'&pay_method='+this.pay_method;
+                }else if(response.data.code=='406'){
+                    location.href='/login/?next=/orders/settlement';
+                }else{
+                    alert(response.data.errmsg);
+                    }
+                })
+                .catch(error=>{
+                 this.order_submitting=false;
+                 console.log(error.response);
+                })
+            }},
+        },
+    });
+    app.mount("#app");
+</script>
+
+
+</html>

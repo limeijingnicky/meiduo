@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'areas.apps.AreasConfig',#省市区联动
     'goods.apps.GoodsConfig',
     'haystack', #全文检索
+    'carts.apps.CartsConfig',#购物车
+    'orders.apps.OrdersConfig',#订单
     # 注册过滤模块
     'django_filters',
 
@@ -181,7 +183,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # LANGUAGE_CODE = 'en-us'
 LANGUAGE_CODE = 'zh-hans'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/shanghai'
 
 USE_I18N = True
 
@@ -222,7 +224,21 @@ CACHES = {
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
             }
-    }
+    },
+     "history": { # 用户浏览记录
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    "carts": { # 用户购物车记录
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://127.0.0.1:6379/4",
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        },
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"  ##普通缓存在default里的0，session缓存在session里的1 完成分库

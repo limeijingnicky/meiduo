@@ -16,12 +16,17 @@ from itsdangerous import URLSafeSerializer
 from itsdangerous import BadSignature
 from django.conf import settings
 from users.models import Address,Users
+from goods import models
+
 
 ##设计子接口逻辑，
 # 包括请求方法，get post put delete
 # 请求地址，url
 # 请求参数，路径参数，查询字符串，表单，json
 # 响应数据，响应数据 html json
+
+
+
 
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -31,6 +36,44 @@ class LoginRequiredJSONMixin(LoginRequiredMixin):
         # 响应json数据
         return JsonResponse({'code':'406','errmsg':'用户未登录'})
 
+
+class UserBrowseHistory(LoginRequiredJSONMixin,View):
+    #记录浏览历史记录，最近5条
+    def post(self,request):
+        #发送的数据形式为请求体（如果为表单数据form-data，则可以直接使用request.POST.get(key）的方式获得数据
+        json_dict = json.loads(request.body.decode())
+        sku_id = json_dict.get('sku_id')
+
+        try: #判断当前sku是否存在
+            models.SKU.objects.get(id=sku_id)
+        except models.SKU.DoesNotExist:
+            return HttpResponseForbidden('当前sku_id不存在')
+        #将sku_id储存在redis数据库
+        redis_conn = get_redis_connection("history")
+        user_id = request.user.id
+        #去重
+        redis_conn.lrem(f'histories_{user_id}',0, sku_id)
+        #保存
+        redis_conn.lpush(f'histories_{user_id}',sku_id)
+        #截取 前五个
+        redis_conn.ltrim(f'histories_{user_id}',0,4)
+
+        return JsonResponse({'code':0,'errmsg':'浏览历史记录完毕'})
+
+    def get(self,request):
+        user_id=request.user.id
+        redis_conn = get_redis_connection("history")
+        sku_ids=redis_conn.lrange(f'histories_{user_id}',0,4)
+        sku_list=[]
+        for sku_id in sku_ids:
+            sku = models.SKU.objects.get(id=sku_id)
+            sku_list.append({
+                'id': sku.id,
+                'name': sku.name,
+                'price': sku.price,
+                'sales': sku.sales
+            })
+        return JsonResponse({'code': 0,'errmsg': '浏览记录查询完毕','sku': sku_list})
 
 
 #修改密码
