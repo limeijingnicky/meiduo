@@ -12,7 +12,7 @@
 
     <meta charset="UTF-8">
     <title>搜索商品</title>
-
+<!--docker里的elasticsearch对应的是search这个容器，启动就可以搜索了，注意haystcak有自己的映射表，需要启动 rebuild_index 进行更新-->
 
 </head>
 
@@ -37,7 +37,7 @@
                     <span>|</span>
                     <a href="/info">用户中心</a>
                     <span>|</span>
-                    <a href="cart.html">我的购物车</a>
+                    <a href="/carts">我的购物车</a>
                     <span>|</span>
                     <a href="user_center_order.html">我的订单</a>
                 </div>
@@ -81,7 +81,7 @@
             <span class="price">{{result.object.price}}</span>
             <span class="comment">{{result.object.comments}}评价</span>
             <span class="unit">已售{{result.object.sales}}台</span>
-            <a href="#" class="add_goods" title="加入购物车"></a>
+            <a href="/detail/{{result.object.id}}" class="add_goods" >加入购物车</a>
         </div>
     </li>
 

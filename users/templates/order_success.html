@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>订单提交成功</title>
+</head>
+<body>
+  <div>
+    <div class="order_success">
+      <p><b>订单提交成功，订单总金额<em>{{payment_amount}}</em></b></p>
+       <p>您以成功提交订单，订单号为<em> {{order_id}}</em></p>
+        <p>支付方式为：
+        {% if pay_method == '1' %}
+           <em>货到付款</em>
+        <p><a href="/">继续浏览其他商品</a></p>
+        {% elif pay_method == '2' %}
+            <em>支付宝</em>
+        <p><a href="#">去支付</a></p>
+        {% else %}
+            <em>其他方式</em>
+        <p><a href="#">去支付</a></p>
+        {% endif %}</p>
+      <p>您可以通过 [用户中心] -> [我的订单] <a href="#">查看订单</a></p>
+    </div>
+  </div>
+</body>
+</html>
