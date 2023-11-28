@@ -35,23 +35,60 @@
             </div>
         </div>
     </div>
-    <div class="search_bar clearfix">
-        <a href="/" class="logo fl">
-            <div class='search_wrap fl'>
-                <form method="get" action="/search/" class="search_con">
-                    <input type="text" class="input_text fl" name="q" placeholder="搜索商品">
-                    <input type="submit" class="input_btn fr" name="" value="搜索">
-                </form>
-                <ul class="search_suggest fl">
-                    <li><a href="#">索尼微单</a></li>
-                    <li><a href="#">优惠15元</a></li>
-                    <li><a href="#">美妆个护</a></li>
-                    <li><a href="#">买2免1</a></li>
-                </ul>
-            </div>
-    </div>
+
     <div>
         <h3>确认收货地址</h3>
+    </div>
+    <div>
+        <dl>
+        {% if addresses %}
+            {% load my_filters %}
+        <dt>寄送到：</dt>
+        {% for address in addresses %}
+            <dd @click=" nowsite = {{address.id}} "><input type="radio" v-model="nowsite" :value="{{address.id}}">
+            {{address.province}}&nbsp;&nbsp;{{address.city}}&nbsp;&nbsp;{{address.district}}&nbsp;&nbsp;
+                ({{address.receiver | hide_middle_name}} 收)&nbsp;&nbsp;{{address.mobile | hide_middle}}</dd>
+        {% endfor %}
+        {% endif %}
+        </dl>
+        <a href="{% url 'user:address' %}">编辑收货地址</a>
+    </div>
+    <h3>支付方式</h3>
+    <div>
+        <input type="radio" name="pay_method" value="1" v-model="pay_method">
+        <label>货到付款</label>
+        <input type="radio" name="pay_method" value="2" v-model="pay_method">
+        <label>支付宝</label>
+    </div>
+    <h3>商品列表</h3>
+    <table>
+  <thead>
+    <tr>
+        <th>商品名称</th>
+        <th>商品价格</th>
+        <th>商品数量</th>
+        <th>小计</th>
+    </tr>
+  </thead>
+    <tbody>
+    {% for sku in skus %}
+    <tr>
+        <td>{{sku.name}}</td>
+        <td>{{sku.price}}元</td>
+        <td>{{sku.count}}</td>
+        <td>{{sku.amount}}元</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    <h3>总金额结算</h3>
+    <div>
+        <div>共<em>{{total_count}}</em>件商品，总金额{{total_amount}}</div>
+        <div>运费：<b>{{freight}}元</b></div>
+        <div>实付款：<b>{{total_payment}}元</b></div>
+    </div>
+    <div>
+        <button @click="on_order_submit" id="order_btn">提交订单</button>
     </div>
     <div class="footer">
         <div class="foot_link">
@@ -66,7 +103,10 @@
     </div>
 </div>
 </body>
-
+<script>
+    let default_address_id = (typeof {{ user.default_address_id }} !== 'undefined') ? {{ user.default_address_id }} : null;
+    let payment_amount = (typeof {{ total_amount }} !== 'undefined') ? {{ total_amount }} : 0;
+</script>
 
 <script>
     const { createApp, ref } = Vue;
@@ -75,6 +115,7 @@
     delimiters: ['[[', ']]'],
     data() {
         this.username=this.getCookie('username');
+        this.default_address_id=default_address_id;
         return {
             order_submitting:false,
             pay_method:2,
@@ -82,6 +123,10 @@
             payment_amount:'',
         };
     },
+    created() {
+    // 在组件创建时，将默认地址ID设置为nowsite的值
+    this.nowsite = this.default_address_id;
+  },
     methods: {
     getCookie(name) {
         const cookies = document.cookie.split('; ');
@@ -93,6 +138,7 @@
         }
             return null;
     },
+
     // 提交订单
     on_order_submit(){
         if(!this.nowsite){
@@ -105,21 +151,23 @@
          }
         if (this.order_submitting==false){
          this.order_submitting=true;
-         let url='/orders/commit';
-            axios.post(url,{
-                address_id:this.nowsite,
-                pay_method:parseInt(this.pay_method)},
+         let url='/orders/commit/';
+            axios.post(url,
                 {
+                address_id:this.nowsite,
+                pay_method:parseInt(this.pay_method)
+                },{
                 headers:{
-    '               X-CSRFToken':getCookie('csrftoken')
+    '               X-CSRFToken':this.getCookie('csrftoken')
                 },
                 responseType:'json'
                 })
             .then(response => {
                 this.order_submitting=false;
                 if(response.data.code=='0'){
-                    location.href='/orders/success/?order_id'+response.data.order_id+
+                    location.href='/orders/success/?order_id='+response.data.order_id+
                                     '&payment_amount='+this.payment_amount+'&pay_method='+this.pay_method;
+                    console.log(response.data.order_id)
                 }else if(response.data.code=='406'){
                     location.href='/login/?next=/orders/settlement';
                 }else{
@@ -135,6 +183,4 @@
     });
     app.mount("#app");
 </script>
-
-
 </html>
