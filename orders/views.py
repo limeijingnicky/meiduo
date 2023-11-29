@@ -90,6 +90,19 @@ class OrderCommitView(LoginRequiredMixin,View):
                         origin_sales=sku.sales
 
                         if count <= origin_stock:
+
+                            ##设置乐观锁，判断当前库存（查询）是否等于原始库存（没人抢），下单成功，改变数据
+                            new_stock = origin_stock - count
+                            new_sales = origin_sales + count
+                            result = SKU.objects.filter(id=sku_id, stock=origin_stock).update(stock=new_stock, sales=new_sales)
+                            # 如果更新时，原始数据变化了，资源抢夺,返回值为0,继续买当前商品，直到真实库存不足为止
+                            if result==0:
+                                continue #继续下单当前sku,代码往上走
+
+                            #result==1,成功下单
+                            sku.spu.sales += count
+                            sku.spu.save()
+
                             OrderGoods.objects.create(
                                 order = order,
                                 sku = sku,#调用redis数据里的信息
@@ -103,18 +116,10 @@ class OrderCommitView(LoginRequiredMixin,View):
                             #
                             # sku.spu.sales += count
                             # sku.spu.save()
-
-                            #设置乐观锁，判断当前库存（查询）是否等于原始库存（没人抢），下单成功，改变数据
-                            new_stock=origin_stock-count
-                            new_sales=origin_sales+count
-                            result=SKU.objects.filter(id=sku_id,stock=origin_stock).upadte(stock=new_stock,salses=new_sales)
-                            #如果更新时，原始数据变化了，资源抢夺,返回值为0,继续买当前商品，直到真实库存不足为止
-                            if result==0:
-                                continue #继续下单当前sku,代码往上走
-                            else: #result为1，表示下单成功
-                                # 累加总订单数量和总价
-                                order.total_count += count
-                                order.order_amount += count * sku.price
+                            # 累加总订单数量和总价
+                            order.total_count += count
+                            order.order_amount += count * sku.price
+                            break
                         else:
                             #库存不足,进行回滚
                             transaction.savepoint_rollback(save_id)
