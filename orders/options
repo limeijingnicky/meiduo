@@ -1,0 +1,10 @@
+#脚本文件，批量生成静态化页面
+#通过sku_id ，查询所有的规格类specs
+#再通过specs查询查询所有的规格选项options
+#构造数据结构，包括specs和options
+specs_dic={
+    spec1:[options],
+    spec2:[options]
+}
+#将数据传入前段，并渲染到网页上，再根据当前选择的sku_id将当前商品数据进行选定
+#还要实现交互效果，即改变option，局部刷新sku_id 以及商品图片和评价等
