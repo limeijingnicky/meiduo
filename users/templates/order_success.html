@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
+    <meta charset="UTF-8">
+    <script src="https://sdk.marmot-cloud.com/package/ams-checkout/1.0.5/umd/index.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>  <!--导入ajax，进行异步请求，局部刷新数据-->
     <meta charset="UTF-8">
     <title>订单提交成功</title>
 </head>
 <body>
-  <div>
+  <div id="app">
+      <div>{{data}}</div>
     <div class="order_success">
       <p><b>订单提交成功，订单总金额<em>{{payment_amount}}</em></b></p>
        <p>您以成功提交订单，订单号为<em> {{order_id}}</em></p>
@@ -19,9 +25,52 @@
         {% else %}
             <em>其他方式</em>
         <p><a href="#">去支付</a></p>
-        {% endif %}</p>
+        {% endif %}
       <p>您可以通过 [用户中心] -> [我的订单] <a href="#">查看订单</a></p>
     </div>
   </div>
+
+<script>
+    let language = navigator.language || navigator.userLanguage;
+    language = language.replace("-", "_"); // 将 "-" 替换成 "_"
+</script>
 </body>
+
+<script>
+    // CDN引入方式下：使用 window.AMSCheckout 实例化
+    const checkoutApp = new window.AMSCheckout({
+      environment: "sandbox",
+      locale: "en_US",
+      mode: "component",
+      networkMode: "session",
+      analytics: {
+        enabled: true
+      },
+      onLog: (code, message)=>{},
+      onEventCallback: (code, message)=>{}
+    });
+
+    const { createApp, ref } = Vue;
+
+    const app = createApp ({
+    delimiters: ['[[', ']]'],
+    data() {
+
+        return {
+            order_submitting:false,
+
+        };
+    },
+    mounted() {
+    // 在组件创建时，将默认地址ID设置为nowsite的值
+    this.on_order_submit();
+  },
+
+    methods: {
+    // 提交订单
+
+        },
+    });
+    app.mount("#app");
+</script>
 </html>

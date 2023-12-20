@@ -8,6 +8,8 @@ from django.core.paginator import Paginator,EmptyPage
 from goods.models import GoodsCategory,SKU,SKUSpecification,SPUSpecification,SpecificationOption,GoodsVisitCount
 from django.utils import timezone
 from datetime import datetime
+
+
 #封装面包屑导航函数
 def breadcrumb(category):
     # 面包屑导航 ,自行判断为几级标签
@@ -31,6 +33,15 @@ def breadcrumb(category):
 
     return breadcrumb
 
+# 通过sku_id ，查询所有的规格类specs
+# #再通过specs查询查询所有的规格选项options
+# #构造数据结构，包括specs和options
+# specs_dic={
+#     spec1:[options],
+#     spec2:[options]
+# }
+# #将数据传入前段，并渲染到网页上，再根据当前选择的sku_id将当前商品数据进行选定
+# #还要实现交互效果，即改变option，局部刷新sku_id 以及商品图片和评价等
 
 
 class DetailVisitView(View):
@@ -74,7 +85,17 @@ class DetailVisitView(View):
 
         return JsonResponse({'code': 0, 'errmsg': '统计搜索记录成功'})
 
-#建立商品详情页面
+#有静态化页面之后，直接渲染html就行
+# class DetailView(View):
+#     def get(self,request,sku_id):
+#         #接收参数
+#         try:
+#             sku=SKU.objects.get(id=sku_id)
+#             return render(request, '{}.html'.format(sku_id))
+#         except SKU.DoesNotExist:
+#             return render(request,'404.html')
+
+# 建立商品详情页面
 class DetailView(View):
     def get(self,request,sku_id):
         #接收参数
@@ -165,6 +186,8 @@ class DetailView(View):
         }
         #响应
         return render(request,'detail.html',context)
+
+
 
 class HotView(View):
     #商品热销排行,取销量最高的前两个

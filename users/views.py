@@ -499,6 +499,10 @@ class LoginView(View):
         password=request.POST.get('password')
         remembered = request.POST.get('remembered')
 
+        print(username)
+        print(password)
+        print(remembered)
+
         #校验参数
         if not all([username,password]):
             return HttpResponseForbidden("缺少必传参数")
@@ -509,18 +513,19 @@ class LoginView(View):
         if not re.match(r'^[0-9a-zA-Z]{8,20}$', password):
             return HttpResponseForbidden("密码不正确")
 
+        print("校验完毕")
 
         #认证用户
         #在数据库中查询用户名是否存在
-        user = authenticate(username=username, password=password)
+        user = authenticate(request=request,username=username, password=password)
         if user is None:
             return render(request, 'login.html', {'password_errmsg': '用户名或者密码错误'})
-
+        print("验证完毕")
 
         #状态保持
         login(request,user)
         #使用remembered 状态保持周期
-        if remembered !='on':
+        if remembered != 'on':
             #不进行状态保持
             request.session.set_expiry(0)
 

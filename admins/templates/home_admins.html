@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>管理首页</title>
+    <style>
+        #myPieChart {
+        /* 添加样式属性 */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 20px;
+            float: right;  /* 设置浮动到右边 */
+            margin-right: 20px;
+        }
+        #login {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        .login_btn {
+            display: flex;
+            align-items: center;
+        }
+
+        .login_btn a {
+            margin-left: 10px;
+        }
+        .container_total{
+            width: 200px;
+            height: 200px;
+            background-color: #efcfb5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 50px auto;
+            position: absolute;
+            top: 10px; /* 调整 top 值来设置距离顶部的位置 */
+            left: 200px; /* 调整 left 值来设置距离左侧的位置 */
+        }
+
+        .count {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .date {
+            font-size: 16px;}
+        .container_increase{
+            width: 200px;
+            height: 200px;
+            background-color: #23ea97;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 50px auto;
+            position: absolute;
+            top: 10px; /* 调整 top 值来设置距离顶部的位置 */
+            left: 450px; /* 调整 left 值来设置距离左侧的位置 */
+        }
+        .container_active{
+            width: 200px;
+            height: 200px;
+            background-color: #1b89ab;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 50px auto;
+            position: absolute;
+            top: 10px; /* 调整 top 值来设置距离顶部的位置 */
+            left: 700px; /* 调整 left 值来设置距离左侧的位置 */
+        }
+        .container_order{
+            width: 200px;
+            height: 200px;
+            background-color: #9f5cc0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 50px auto;
+            position: absolute;
+            top: 10px; /* 调整 top 值来设置距离顶部的位置 */
+            left: 950px; /* 调整 left 值来设置距离左侧的位置 */
+        }
+        .container_month{
+            width: 200px;
+            height: 200px;
+            background-color: #9f5cc0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 50px auto;
+            position: absolute;
+            top: 220px; /* 调整 top 值来设置距离顶部的位置 */
+            left: 200px; /* 调整 left 值来设置距离左侧的位置 */
+        }
+    </style>
+
+</head>
+
+
+<body>
+<div id="app">
+    <div id="login">
+        <h2>管理系统</h2>
+        <div class="fr">
+            <div v-if="username" class="login_btn fl">
+                欢迎管理员：<em>[[ username]]</em>
+                <span>|</span>
+                <a @click="logoutAndClearLocalStorage()">退出</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebar">
+        <h2>管理首页</h2>
+        <ul>
+            <li><a href="#">用户管理</a></li>
+            <li><a href="#">商品管理</a></li>
+            <li><a href="#">订单管理</a></li>
+            <li><a href="#">系统管理</a></li>
+        </ul>
+    </div>
+    <div class="container_total">
+        <p class="count">[[total_count]]</p>
+        <p class="date">[[total_date]]</p>
+        <p class="users">用户总数</p>
+    </div>
+    <div class="container_increase">
+        <p class="count">[[count]]</p>
+        <p class="date">[[date]]</p>
+        <p class="users">用户当日新增</p>
+    </div>
+    <div class="container_active">
+        <p class="count">[[active_count]]</p>
+        <p class="date">[[active_date]]</p>
+        <p class="users">用户日活量</p>
+    </div>
+    <div class="container_order">
+        <p class="count">[[order_count]]</p>
+        <p class="date">[[order_date]]</p>
+        <p class="users">下单用户量</p>
+    </div>
+
+    <div class="container_month">
+        <p class="count">[[month_count]]</p>
+        <p class="date">[[month_date]]</p>
+        <p class="users">最近一个月内新增用户量</p>
+    </div>
+
+    <canvas id="myPieChart" width="400" height="400"></canvas>
+</div>
+</body>
+
+
+<script>
+    const { createApp, ref } = Vue;
+
+    const app = createApp({
+        delimiters:['[[',']]'],
+        data() {
+            return {
+                chartWidth: 100, // 设置图表宽度
+                chartHeight: 100, // 设置图表高度
+
+                username: "",
+                total_date:"",
+                total_count:"",
+                date:"",
+                count:"",
+                active_date:"",
+                active_count:"",
+                order_date:"",
+                order_count:"",
+                month_date:"",
+                month_count:""
+            };
+        },
+        mounted(){
+            let user=localStorage.username;
+            if (user==undefined)
+            {
+                window.location.href="/admins/login";
+            }else{
+                this.username=user;
+                this.get_month_count();
+                // this.get_total_count();
+                // this.get_increase_count();
+                // this.get_active_count();
+                // this.get_order_count();
+                // 调用异步方法
+                this.loadDataAndDrawPieChart();
+
+            };
+        },
+
+        methods: {
+            async loadDataAndDrawPieChart() {
+                try{
+                    // 使用 Promise.all 并行发起请求
+                    await this.get_total_count(),
+                    await this.get_increase_count(),
+                    await this.get_active_count(),
+                    await this.get_order_count(),
+//                    await this.get_month_count();
+                    // 传递异步请求的结果给 drawPieChart
+                    this.drawPieChart(this.active_count,this.order_count);
+                }catch(error){
+                    console.log(error);
+                }
+            },
+            drawPieChart(count, amount) {
+                const data = {
+                    labels: ['日活用户', '下单用户'],
+                    datasets: [{
+                        data: [count, amount],
+                        backgroundColor: ['#FF6384', '#36A2EB'],
+                    }],
+                };
+                const options = {
+                    responsive: false, // 设置为false以禁用响应式
+                    maintainAspectRatio: false, // 设置为false以禁用宽高比维持
+                };
+
+                const ctx = document.getElementById('myPieChart').getContext('2d');
+                this.chart = new Chart(ctx, {
+                    type: 'pie',
+                    data: data,
+                    options:options,
+                });
+            },
+
+            get_total_count(){
+                return new Promise((resolve, reject) =>{
+                    let url='/admins/statistical/total_count/';
+                    let token='JWT'+localStorage.token;
+                    axios.get(url,
+                        {headers:token}
+                    )
+                        .then(response=>{
+                        this.total_date=response.data.date;
+                        this.total_count=response.data.count;
+                        resolve();
+                    })
+                        .catch(error => {
+                        console.log(error);
+                        reject(error);
+                    });
+                });
+            },
+            get_increase_count(){
+                return new Promise((resolve, reject) =>{
+                    let url='/admins/statistical/day_increment/';
+                    let token='JWT'+localStorage.token;
+                    axios.get(url,
+                        {headers:token}
+                    )
+                        .then(response=>{
+                        this.date=response.data.date;
+                        this.count=response.data.count;
+                        resolve();
+                    })
+                        .catch(error => {
+                        console.log(error);
+                        reject(error);
+                    });
+                });
+            },
+            get_active_count(){
+                return new Promise((resolve, reject) =>{
+                    let url='/admins/statistical/day_active/';
+                    let token='JWT'+localStorage.token;
+                    axios.get(url,
+                        {headers:token}
+                    )
+                        .then(response=>{
+                        this.active_date=response.data.date;
+                        this.active_count=response.data.active_count;
+                        resolve();
+                    })
+                        .catch(error => {
+                        console.log(error);
+                        reject(error);
+                    });
+                });
+            },
+            get_order_count(){
+                return new Promise((resolve, reject) =>{
+                    let url='/admins/statistical/day_order/';
+                    let token='JWT'+localStorage.token;
+                    axios.get(url,
+                        {headers:token}
+                    )
+                        .then(response=>{
+                        this.order_date=response.data.date;
+                        this.order_count=response.data.order_count;
+                        resolve();
+                    })
+                        .catch(error => {
+                        console.log(error);
+                        reject(error);
+                    });
+                });
+            },
+
+             get_month_count(){
+//                    return new Promise(resolve,reject=>{
+                    let url='/admins/statistical/month_increment/';
+                    let token='JWT'+localStorage.token;
+                    axios.get(url,
+                        {headers:token}
+                    )
+                        .then(response=>{
+                        this.month_date=response.data.date;
+                        this.month_count=response.data.count;
+
+                    })
+                        .catch(error => {
+                        console.log(error);
+
+                    });
+//             });
+            },
+
+            logoutAndClearLocalStorage() {
+                // 清空 localStorage
+                localStorage.clear();
+                window.location.href="/admins/login";
+            },
+        },
+    });
+    app.mount("#app");
+</script>
+</html>

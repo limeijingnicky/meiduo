@@ -44,7 +44,6 @@ def get_categories():
 
     return category_data
 
-
 class IndexView(View):
 
     def get(self, request):
