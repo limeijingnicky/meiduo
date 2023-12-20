@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>  <!--导入ajax，进行异步请求，局部刷新数据-->
+    <!--    <script href="../meiduo/users/templates/axios.min.js"></script>-->
+
+    <title>美多商城-后台管理系统登录</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+            margin: 0;
+        }
+
+        .register_con {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: left; /* Center-align the text */
+        }
+
+        .l_con {
+            text-align: left; /* Left-align the text within the .l_con div */
+        }
+
+        .l_con img {
+            max-width: 20%;
+        }
+        .button{
+            height: 80 px;
+            width: 80 px;
+        }
+
+
+    </style>
+
+</head>
+<body>
+<div class="login_top clearfix">
+    <a href="index.html" class="login_logo"><img src=" "></a>
+</div>
+<div class="login_form_bg" id="app">
+    <div class="login_form_wrap clearfix" v-cloak>
+        <div class="login form fr">
+            <div class="login_title clearfix">
+                <a class="cur">管理员账户登录</a>
+            </div>
+            <div class="form_con">
+                <div class="form_input cur">
+                    <form method="post" class="login-form" @submit="on_submit" v-cloak>
+                        {{ csrf_input }}
+                        <label for="user_name">用户名：</label>
+                        <input type="text" v-model="username" @blur="check_username" name="username" class="user_name">
+                        <div v-show="error_username" class="user_error">请输入正确的用户名</div>
+                        <div></div>
+
+
+                        <label for="password">密码：</label>
+                        <input type="password" v-model="password" @blur="check_password" name="password" class="pwd">
+                        <div v-show="error_password" class="pwd_error">密码最少为8位，最长为20位</div>
+
+
+                        <div> {{ password_errmsg }}</div>
+
+
+                        <div class="more_input clearfix">
+                            <input type="checkbox" v-model="remembered" name="remembered">
+                            <label>记住登录</label>
+                        </div>
+                        <button class="input_submit" @click="get_token">登录</button>
+                    </form>
+                    {% if loginmsg.code != 202 %}
+                    <div>{{ loginmsg.errmsg }}</div>
+                    {% else %}
+                    <div >[[to_admin_home()]]</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <script>
+
+            function get_query_string(parameter_name) {
+                // 获取当前页面的URL
+                var url = window.location.href;
+
+                // 使用正则表达式匹配URL中的查询参数部分
+                var parameter_regex = new RegExp('[?&]' + parameter_name + '=([^&#]*)');
+
+                // 使用exec方法从URL中提取参数值
+                var match = parameter_regex.exec(url);
+
+                // 如果找到匹配的参数，返回参数值，否则返回null
+                if (match !== null) {
+                    return decodeURIComponent(match[1]);
+                } else {
+                    return null;
+                }
+            }
+
+        </script>
+
+        <!--引入vue代码-->
+        <script>
+            const { createApp, ref } = Vue;
+
+            const app = createApp({
+                delimiters:['[[',']]'],
+                data() {
+                    return {
+                        username: "",
+                        password: "",
+                        loginmsg:"",
+                        error_username: false,
+                        error_password: false,
+                        remembered: false
+                    };
+                },
+
+                methods: {
+                    //检查账号
+                    check_username() {
+                        // 用户名是5-20个字符，[a-zA-Z0-9_-]
+                        // 定义正则
+                        let regex0 = /[a-zA-Z0-9_-]{5,20}$/;
+                        // 使用正则匹配用户名数据
+                        if (regex0.test(this.username)) {
+                            // 匹配成功，不展示错误提示信息
+                            this.error_username = false;
+                        } else {
+                            // 匹配失败，展示错误提示信息
+                            this.error_username = true;
+                        }
+                    },
+
+
+                    // 校验密码
+                    check_password(){
+                        let regex = /[0-9a-zA-Z]{1,10}$/;
+                        if (regex.test(this.password)) {
+                            this.error_password = false;
+                        } else {
+                            this.error_password = true;
+                        }
+                    },
+
+
+                    // 监听表单提交事件
+                    on_submit() {
+                        // Run validation checks
+                        this.check_username();
+                        this.check_password();
+
+
+                        if (error_username.value == false && error_password.value==false ){
+                            window.event.returnValue = true ;
+                        };
+                    },
+
+                    to_admin_home(){
+                        window.location.href = '/admins/home/';
+                    },
+
+                    get_token(){
+                        let url='/admins/authorizations/';
+                        axios.post(url,{
+                            "username": this.username,
+                            "password": this.password
+                        },{
+                            responseType:'json'
+                        })
+                            .then(response => {
+
+                            if (response.data.username==this.username){
+                                window.localStorage.clear();
+                                window.sessionStorage.clear();
+                                window.localStorage.setItem('token',response.data.token);
+                                window.localStorage.setItem('username',response.data.username);
+                                window.localStorage.setItem('id',response.data.id);
+                            }else{
+                                console.log("error username");
+                            }
+
+                        })
+                            .catch(error =>{
+                            console.log(error.response);
+                        })
+                    }
+
+                }
+            });
+
+            app.mount("#app");
+
+        </script>
+</body>
+</html>

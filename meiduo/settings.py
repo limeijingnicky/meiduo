@@ -15,6 +15,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 import logging
+import datetime
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,6 +49,13 @@ INSTALLED_APPS = [
     'haystack', #全文检索
     'carts.apps.CartsConfig',#购物车
     'orders.apps.OrdersConfig',#订单
+    'payment.apps.PaymentConfig',#支付
+
+    'corsheaders',#跨域模块
+    'django_crontab', #定时任务
+
+    #后台管理模块
+    'admins.apps.AdminsConfig',
     # 注册过滤模块
     'django_filters',
 
@@ -98,6 +106,7 @@ INSTALLED_APPS = [
 ##中间键用来监听 请求处理前  和 响应
 ##在请求处理之前从上而下执行，请求处理之后即响应是从下往上执行
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -338,3 +347,44 @@ HAYSTACK_CONNECTIONS={
 }
 # 当添加、修改、删除数据时，自动生成索引
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+#支付宝
+
+
+#跨域名单cors ,前端服务使用8000端口，后端服务使用8080端口
+CORS_ALLOWED_ORIGINS = [
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8080",
+        "http://localhost:8080"
+]
+CORS_ALLOW_CREDENTIALS = True #允许携带cookie
+
+CORS_ALLOW_METHODS = (
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+)
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
+JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'admins.utils.jwt_response_payload_handler',
+}

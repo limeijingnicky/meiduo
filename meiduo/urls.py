@@ -16,9 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include,re_path
 
-
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
+    path('admins/', include(('admins.urls','admins'), namespace='admins')),
     path('', include(('users.urls','users'), namespace='user')),
     path('', include(('contents.urls','contents'),namespace='content')),
     path('', include(('verifications.urls','verifications'),namespace='verification')),
@@ -28,5 +28,5 @@ urlpatterns = [
     re_path(r'^search/', include('haystack.urls')),
     path('', include(('carts.urls','carts'),namespace='carts')),
     path('', include(('orders.urls','carts'),namespace='orders')),
-
+    path('', include(('payment.urls', 'payment'), namespace='payment')),
 ]

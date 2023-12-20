@@ -12,6 +12,7 @@ from orders.models import OrderInfo,OrderGoods
 from django.utils import timezone
 from django.db import transaction
 
+
 class OrderSuccessView(LoginRequiredMixin,View):
     def get(self,request):
         '''提交订单成功页面'''

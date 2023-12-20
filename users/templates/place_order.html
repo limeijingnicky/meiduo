@@ -116,11 +116,12 @@
     data() {
         this.username=this.getCookie('username');
         this.default_address_id=default_address_id;
+        this.payment_amount= payment_amount;
+
         return {
             order_submitting:false,
             pay_method:2,
             nowsite:'',
-            payment_amount:'',
         };
     },
     created() {
@@ -158,7 +159,7 @@
                 pay_method:parseInt(this.pay_method)
                 },{
                 headers:{
-    '               X-CSRFToken':this.getCookie('csrftoken')
+                    'X-CSRFToken':this.getCookie('csrftoken')
                 },
                 responseType:'json'
                 })

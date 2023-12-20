@@ -76,7 +76,7 @@
     {% for result in page %}
     <li>
 
-        <h4><a href="detail.html">{{result.object.name}}</a> </h4>
+        <h4><a href="../detail/{{result.object.id}}">{{result.object.name}}</a> </h4>
         <div class="operate">
             <span class="price">{{result.object.price}}</span>
             <span class="comment">{{result.object.comments}}评价</span>
