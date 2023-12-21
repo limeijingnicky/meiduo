@@ -6,6 +6,8 @@ from orders.models import OrderInfo
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from datetime import timedelta
+from goods.models import GoodsVisitCount,GoodsCategory
+from django.core.serializers.json import DjangoJSONEncoder
 
 class UserCountView(APIView):
     #权限指定
@@ -74,7 +76,7 @@ class UserOrderView(APIView):
     # 渲染器指定
     renderer_classes = [JSONRenderer]
 
-    '''下单用户统计'''
+    '''日分类统计'''
     def get(self, request):
         # 获取日期
         now_date = date.today()
@@ -94,7 +96,7 @@ class UserOrderView(APIView):
 
 class UserMonthView(APIView):
     # 权限指定
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
     # 渲染器指定
     renderer_classes = [JSONRenderer]
 
@@ -105,13 +107,54 @@ class UserMonthView(APIView):
         #新增用户统计，统计当前日期-30天之间所有新增的用户
         before_month_date=now_date-timedelta(days=30)
 
-        # count = Users.objects.filter(date_joined__range=[before_month_date,now_date]).count()
+        date_list=[]
+        for i in range(31):
+            b_date=before_month_date+timedelta(days=i)
+            n_date=b_date+timedelta(days=i+1)
+
+            count = Users.objects.filter(date_joined__gte=b_date, date_joined__lt=n_date).count()
+            date_list.append({b_date.isoformat(): count})
+        # 返回结果
+        return Response(
+            {
+                'count': date_list
+            }
+        )
+
+
+
+
+class GoodsVistView(APIView):
+
+    # 权限指定
+    # permission_classes = [IsAdminUser]
+    # 渲染器指定
+    renderer_classes = [JSONRenderer]
+
+    '''当日浏览商品统计'''
+    def get(self, request):
+        # 获取日期
+        now_date = date.today()
+
+        category_list=[]
+        category_set = GoodsVisitCount.objects.filter(date__gte=now_date)
+        for categorys in category_set:
+            category_list.append(categorys.category_id)
+
+        goods_list = []
+        for category in category_list:
+            count= GoodsVisitCount.objects.get(date__gte=now_date,category_id=category).counts
+            category_second = GoodsCategory.objects.get(id=category).parent_id
+            # category_first = GoodsCategory.objects.get(id=category_second).parent_id
+            # category_name = GoodsCategory.objects.get(id=category_first).name
+            category_name = GoodsCategory.objects.get(id=category_second).name
+            goods_list.append({category_name: count}) #用的二级分类结果
+
+        print(goods_list)
 
         # 返回结果
         return Response(
             {
-                'date': now_date,
-                'count': 0
+                'count': goods_list
             }
         )
-
