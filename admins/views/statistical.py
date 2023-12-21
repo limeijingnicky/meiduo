@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from datetime import timedelta
 from goods.models import GoodsVisitCount,GoodsCategory
-from django.core.serializers.json import DjangoJSONEncoder
+
 
 class UserCountView(APIView):
     #权限指定
