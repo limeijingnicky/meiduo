@@ -10,11 +10,28 @@
     <style>
         #myPieChart {
         /* 添加样式属性 */
+                 aspect-ratio: auto none;  /* 覆盖默认的 aspect-ratio */
             border: 1px solid #ccc;
             border-radius: 8px;
             margin-top: 20px;
             float: right;  /* 设置浮动到右边 */
             margin-right: 20px;
+        }
+         #lineChart {
+        /* 添加样式属性 */
+             aspect-ratio: auto none;  /* 覆盖默认的 aspect-ratio */
+             border: 1px solid #ccc;
+             margin-top: 140px;
+            float: left;  /* 设置浮动到右边 */
+            margin-left: 150px;
+        }
+          #barChart {
+        /* 添加样式属性 */
+             aspect-ratio: auto none;  /* 覆盖默认的 aspect-ratio */
+             border: 1px solid #ccc;
+             margin-top: 20px;
+            float: left;  /* 设置浮动到右边 */
+            margin-left: 150px;
         }
         #login {
             position: absolute;
@@ -35,8 +52,8 @@
             margin-left: 10px;
         }
         .container_total{
-            width: 200px;
-            height: 200px;
+            width: 140px;
+            height: 140px;
             background-color: #efcfb5;
             display: flex;
             flex-direction: column;
@@ -44,20 +61,21 @@
             justify-content: center;
             margin: 50px auto;
             position: absolute;
-            top: 10px; /* 调整 top 值来设置距离顶部的位置 */
+            top: 2px; /* 调整 top 值来设置距离顶部的位置 */
             left: 200px; /* 调整 left 值来设置距离左侧的位置 */
         }
 
         .count {
-            font-size: 50px;
-            margin-bottom: 10px;
+            font-size: 30px;
+            margin-bottom: 2px;
         }
 
         .date {
-            font-size: 16px;}
+            font-size: 10px;
+        }
         .container_increase{
-            width: 200px;
-            height: 200px;
+            width: 140px;
+            height: 140px;
             background-color: #23ea97;
             display: flex;
             flex-direction: column;
@@ -65,12 +83,12 @@
             justify-content: center;
             margin: 50px auto;
             position: absolute;
-            top: 10px; /* 调整 top 值来设置距离顶部的位置 */
+            top: 2px; /* 调整 top 值来设置距离顶部的位置 */
             left: 450px; /* 调整 left 值来设置距离左侧的位置 */
         }
         .container_active{
-            width: 200px;
-            height: 200px;
+             width: 140px;
+            height: 140px;
             background-color: #1b89ab;
             display: flex;
             flex-direction: column;
@@ -78,12 +96,12 @@
             justify-content: center;
             margin: 50px auto;
             position: absolute;
-            top: 10px; /* 调整 top 值来设置距离顶部的位置 */
+            top: 2px; /* 调整 top 值来设置距离顶部的位置 */
             left: 700px; /* 调整 left 值来设置距离左侧的位置 */
         }
         .container_order{
-            width: 200px;
-            height: 200px;
+            width: 140px;
+            height: 140px;
             background-color: #9f5cc0;
             display: flex;
             flex-direction: column;
@@ -91,22 +109,10 @@
             justify-content: center;
             margin: 50px auto;
             position: absolute;
-            top: 10px; /* 调整 top 值来设置距离顶部的位置 */
+            top: 2px; /* 调整 top 值来设置距离顶部的位置 */
             left: 950px; /* 调整 left 值来设置距离左侧的位置 */
         }
-        .container_month{
-            width: 200px;
-            height: 200px;
-            background-color: #9f5cc0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 50px auto;
-            position: absolute;
-            top: 220px; /* 调整 top 值来设置距离顶部的位置 */
-            left: 200px; /* 调整 left 值来设置距离左侧的位置 */
-        }
+
     </style>
 
 </head>
@@ -155,13 +161,15 @@
         <p class="users">下单用户量</p>
     </div>
 
-    <div class="container_month">
-        <p class="count">[[month_count]]</p>
-        <p class="date">[[month_date]]</p>
-        <p class="users">最近一个月内新增用户量</p>
-    </div>
+<!--    <div class="container_month">-->
+<!--        <p class="count">[[month_count]]</p>-->
+<!--        <p class="users">最近一个月内新增用户量</p>-->
+<!--    </div>-->
 
-    <canvas id="myPieChart" width="400" height="400"></canvas>
+    <canvas id="myPieChart" width="300" height="300"></canvas>
+    <canvas id="lineChart" ></canvas>
+    <canvas id="barChart" ></canvas>
+
 </div>
 </body>
 
@@ -173,8 +181,6 @@
         delimiters:['[[',']]'],
         data() {
             return {
-                chartWidth: 100, // 设置图表宽度
-                chartHeight: 100, // 设置图表高度
 
                 username: "",
                 total_date:"",
@@ -185,8 +191,8 @@
                 active_count:"",
                 order_date:"",
                 order_count:"",
-                month_date:"",
-                month_count:""
+                month_count:[],
+                category_count:[]
             };
         },
         mounted(){
@@ -196,7 +202,7 @@
                 window.location.href="/admins/login";
             }else{
                 this.username=user;
-                this.get_month_count();
+//                this.get_month_count();
                 // this.get_total_count();
                 // this.get_increase_count();
                 // this.get_active_count();
@@ -215,9 +221,13 @@
                     await this.get_increase_count(),
                     await this.get_active_count(),
                     await this.get_order_count(),
-//                    await this.get_month_count();
+                    await this.get_month_count(),
+                            await this.get_category_count()
+
                     // 传递异步请求的结果给 drawPieChart
-                    this.drawPieChart(this.active_count,this.order_count);
+                    this.drawPieChart(this.active_count,this.order_count),
+                    this.drawlineChart(this.month_count,"最近一个月内当日新增会员"),
+                    this.barChart(this.category_count,"当日浏览商品数量")
                 }catch(error){
                     console.log(error);
                 }
@@ -242,6 +252,89 @@
                     options:options,
                 });
             },
+
+            drawlineChart(count,label) {
+                const responseData = {
+                    count,
+                    label
+//                    count: [
+//                        {"2023-12-01": 5},
+//                        {"2023-12-02": 8},
+//                        // ... 其他日期和计数
+//                    ]
+                };
+                const options = {
+                    responsive: false, // 设置为false以禁用响应式
+                    maintainAspectRatio: false, // 设置为false以禁用宽高比维持
+                };
+
+                // 处理数据，提取日期和计数
+                const dates = responseData.count.map(entry => Object.keys(entry)[0]);
+                const counts = responseData.count.map(entry => entry[Object.keys(entry)[0]]);
+
+               // 获取 canvas 元素
+                const ctx = document.getElementById('lineChart').getContext('2d');
+
+                document.getElementById('lineChart').width = 1200;
+                document.getElementById('lineChart').height = 300;
+
+
+                // 创建折线图
+                const lineChart = new Chart(ctx, {
+                    type: 'line',
+                    options:options,
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: label,
+                            borderColor: 'rgb(75, 0, 192)',
+                            data: counts,
+                        }],
+                    },
+                });
+            },
+
+            barChart(count,label) {
+                const responseData = {
+                    count,
+                    label
+//                    count: [
+//                        {"2023-12-01": 5},
+//                        {"2023-12-02": 8},
+//                        // ... 其他日期和计数
+//                    ]
+                };
+                const options = {
+                    responsive: false, // 设置为false以禁用响应式
+                    maintainAspectRatio: false, // 设置为false以禁用宽高比维持
+                };
+
+                // 处理数据，提取日期和计数
+                const dates = responseData.count.map(entry => Object.keys(entry)[0]);
+                const counts = responseData.count.map(entry => entry[Object.keys(entry)[0]]);
+
+               // 获取 canvas 元素
+                const ctx = document.getElementById('barChart').getContext('2d');
+
+                document.getElementById('barChart').width = 1200;
+                document.getElementById('barChart').height = 300;
+
+
+                // 创建折线图
+                const lineChart = new Chart(ctx, {
+                    type: 'bar',
+                    options:options,
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: label,
+                            backgroundColor: 'rgb(75, 192, 192)',
+                            data: counts,
+                        }],
+                    },
+                });
+            },
+
 
             get_total_count(){
                 return new Promise((resolve, reject) =>{
@@ -316,23 +409,40 @@
                 });
             },
 
-             get_month_count(){
-//                    return new Promise(resolve,reject=>{
-                    let url='/admins/statistical/month_increment/';
+            get_month_count(){
+                return new Promise((resolve, reject) =>{
+                    let url='/admins/statistical/month/';
                     let token='JWT'+localStorage.token;
                     axios.get(url,
                         {headers:token}
                     )
                         .then(response=>{
-                        this.month_date=response.data.date;
                         this.month_count=response.data.count;
-
+                        resolve();
                     })
                         .catch(error => {
                         console.log(error);
-
+                        reject(error);
                     });
-//             });
+                });
+            },
+
+             get_category_count(){
+                return new Promise((resolve, reject) =>{
+                    let url='/admins/statistical/goodsvisit/';
+                    let token='JWT'+localStorage.token;
+                    axios.get(url,
+                        {headers:token}
+                    )
+                        .then(response=>{
+                        this.category_count=response.data.count;
+                        resolve();
+                    })
+                        .catch(error => {
+                        console.log(error);
+                        reject(error);
+                    });
+                });
             },
 
             logoutAndClearLocalStorage() {

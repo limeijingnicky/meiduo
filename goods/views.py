@@ -78,7 +78,7 @@ class DetailVisitView(View):
         try:
             goods_visit.category=goods
             goods_visit.date=date
-            goods_visit.count=goods_visit.count+1
+            goods_visit.counts=goods_visit.counts+1
             goods_visit.save()
         except Exception as e:
             return JsonResponse({'code': 420, 'errmsg': '统计搜索记录失败'})
