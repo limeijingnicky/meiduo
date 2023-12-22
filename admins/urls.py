@@ -3,7 +3,7 @@ from admins.views.login_admins import *
 from admins.views.home_admins import *
 from rest_framework_jwt.views import obtain_jwt_token
 from admins.views.statistical import UserCountView,UserIncreaseView,UserActiveView,UserOrderView,UserMonthView,GoodsVistView
-from admins.views.user import UsersView
+from admins.views.user import UsersView,UserAddView
 
 urlpatterns = [
     re_path(r'^authorizations/$', obtain_jwt_token, name='authorization'),
@@ -17,5 +17,6 @@ urlpatterns = [
     re_path(r'^statistical/goodsvisit/$', GoodsVistView.as_view(), name='goodsvisit_admins'),
 
     re_path(r'^user/(?P<page_num>\d+)/(?P<keyword>[a-zA-Z0-9_-]{0,20}$)', UsersView.as_view(), name='user_admins'),
+    re_path(r'^add_user/$', UserAddView.as_view(), name='add_admins')
 
 ]
