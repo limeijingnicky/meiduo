@@ -33,8 +33,8 @@ class CategoryGetView(View):
         category_id = request.GET.get('category_id')
 
         if not category_id:
-            #获取缓存数据
-            category1_models_list=cache.get('category1_model_list')
+            # #获取缓存数据
+            category1_models_list=cache.get('category1dddd_model_list')
 
             if not category1_models_list:
                 #需要查询省份
@@ -50,7 +50,7 @@ class CategoryGetView(View):
                         }
                         category1_models_list.append(p)
                     #将自动加载的省份数据，进行缓存
-                    cache.set('category1_model_list',category1_models_list,3600)
+                    # cache.set('category1_model_list',category1_models_list,360)
                     return JsonResponse({'code': 0, 'errmsg': 'ok', 'category1_list': category1_models_list})
 
                 except Exception as e:
@@ -86,8 +86,8 @@ class CategoryGetView(View):
                         'subs': subs
                     }
 
-                    #缓存城市或区县
-                    cache.set('sub_category_'+category_id,sub_data,3600)
+                    #缓存
+                    cache.set('sub_category_'+category_id,sub_data,360)
 
                 except Exception as e:
                     return JsonResponse({
@@ -145,63 +145,99 @@ class CategoryView(View):
                         })
 
         else:
-            print(keyword)
+            categories_id=[]
+            #查询数据集
             cates = GoodsCategory.objects.filter(name__contains=keyword)
 
             if not cates:
                 return render(request,'category_admins.html', {'page_categories': categories})
-
-            for cate in cates:
-                #应该往下找
-                if cate.parent_id is None:
-                    #该对象为一级标签
-                    second_cates=GoodsCategory.objects.filter(parent_id=cate.id)
-                    for second_cate in second_cates:
-                        tird_cates=GoodsCategory.objects.filter(parent_id=second_cate.id)
-                        for third_cate in tird_cates:
+            else:
+                for cate in cates:
+                    #注意需要去重，因为一级或二级或三级可能同时存在相同字段，检查id
+                    if cate.parent_id is None:
+                        # 往上找
+                        if cate.id not in categories_id:
+                            categories_id.append(cate.id)
                             categories.append(
                                 {
-                                    'id': third_cate.id,
-                                    'third_category_name': third_cate.name,
-                                    'second_category_name': second_cate.name,
+                                    'id': cate.id,
+                                    'third_category_name': "",
+                                    'second_category_name': "",
                                     'first_category_name': cate.name
                                 }
                             )
-                # if cate.parent_id is None:
-                #     categories.append(
-                #         {
-                #             'id':cate.id,
-                #             'third_category_name':"",
-                #             'second_category_name':"",
-                #             'first_category_name':cate.name
-                #         }
-                #     )
-                else:
-                    #可能是二级标签，也可能是三级标签,要先判断
-                    parent_cate = GoodsCategory.objects.get(id=cate.parent_id)
-                    if parent_cate.parent_id is None:
-                        #二级标签
-                        third_cates=GoodsCategory.objects.filter(parent_id=parent_cate.id)
-                        for third_cate in third_cates:
-                            categories.append(
-                                {
-                                    'id': third_cate.id,
-                                    'third_category_name':third_cate.name,
-                                    'second_category_name': cate.name,
-                                    'first_category_name': parent_cate.name,
-                                }
-                            )
+                            #往下找
+                            #该对象为一级标签
+                            second_cates=GoodsCategory.objects.filter(parent_id=cate.id)
+                            for second_cate in second_cates:
+                                if second_cate.id not in categories_id:
+                                    categories_id.append(second_cate.id)
+                                    categories.append(
+                                        {
+                                            'id': second_cate .id,
+                                            'third_category_name': '',
+                                            'second_category_name': second_cate.name,
+                                            'first_category_name': cate.name
+                                        }
+                                    )
+
+                                    third_cates=GoodsCategory.objects.filter(parent_id=second_cate.id)
+                                    for third_cate in third_cates:
+                                        if third_cate.id not in categories_id:
+                                            categories_id.append(third_cate.id)
+                                            categories.append(
+                                                {
+                                                    'id': third_cate.id,
+                                                    'third_category_name': third_cate.name,
+                                                    'second_category_name': second_cate.name,
+                                                    'first_category_name': cate.name
+                                                }
+                                            )
+
                     else:
-                        #三级标签
-                        first_cate = GoodsCategory.objects.get(id=parent_cate.parent_id)
-                        categories.append(
-                            {
-                                'id': cate.id,
-                                'third_category_name': cate.name,
-                                'second_category_name':parent_cate.name,
-                                'first_category_name': first_cate.name
-                            }
-                        )
+                        #可能是二级标签，也可能是三级标签,要先判断
+                        parent_cate = GoodsCategory.objects.get(id=cate.parent_id)
+                        if parent_cate.parent_id is None:
+                            #二级标签,稍微复杂一点，既要往下找，又要网上找
+
+                            #往上找
+                            if cate.id not in categories_id:
+                                categories_id.append(cate.id)
+                                categories.append(
+                                    {
+                                        'id':cate.id,
+                                        'third_category_name':"",
+                                        'second_category_name':cate.name,
+                                        'first_category_name':parent_cate.name
+                                    }
+                                )
+
+                                #往下找
+                                third_cates=GoodsCategory.objects.filter(parent_id=cate.id)
+                                for third_cate in third_cates:
+                                    if third_cate.id not in categories_id:
+                                        categories_id.append(third_cate.id)
+                                        categories.append(
+                                            {
+                                                'id': third_cate.id,
+                                                'third_category_name':third_cate.name,
+                                                'second_category_name': cate.name,
+                                                'first_category_name': parent_cate.name,
+                                            }
+                                        )
+                        else:
+                            #三级标签
+                            first_cate = GoodsCategory.objects.get(id=parent_cate.parent_id)
+                            if cate.id not in categories_id:
+                                categories_id.append(cate.id)
+                                categories.append(
+                                    {
+                                        'id': cate.id,
+                                        'third_category_name': cate.name,
+                                        'second_category_name': parent_cate.name,
+                                        'first_category_name': first_cate.name
+                                    }
+                                )
 
 
         paginator = Paginator(categories, 10)
@@ -239,51 +275,43 @@ class CategoryAddView(View):
         :return:
         """
         json_dict = json.loads(request.body.decode())
-        parent_category_name = json_dict.get('name')
-        second_category_name = json_dict.get('name')
-        third_category_name  = json_dict.get('name')
+        catename = json_dict.get('catename')
+        cl1 = json_dict.get('cl1')
+        cl2 = json_dict.get('cl2')
 
+        print(f'catename:{catename}')
+        print(f'cl1:{cl1}')
+        print(f'cl2:{cl2}')
 
-        #判断是否为空
-        if not all([parent_category_name,second_category_name,third_category_name]):
-            return HttpResponseForbidden(request,'参数不全')
-
-        if chinese_len(parent_category_name)>20:
+        if chinese_len(catename)>20:
             return HttpResponseForbidden('请输入1-20个字符的类别名称')
-        if chinese_len(second_category_name) > 20:
-            return HttpResponseForbidden('请输入1-20个字符的类别名称')
-        if chinese_len(third_category_name) > 20:
-            return HttpResponseForbidden('请输入1-20个字符的类别名称')
+        #判断cl1, cl2, cl3是否都存在，从而确认新增哪个级别的，并且确认这个新增级别的parent_id
 
-
-        #先判断一级类别是否存在
-        parent = GoodsCategory.objects.filter(name=parent_category_name,parent_id=None)
-        if not parent:
-            try:
-                new_p_category=GoodsCategory.objects.create(name=parent_category_name,parent_id=None)
-                new_s_category = GoodsCategory.objects.create(name=second_category_name, parent_id=new_p_category.id)
-                new_t_category = GoodsCategory.objects.create(name=third_category_name, parent_id=new_s_category.id)
-                return JsonResponse({'code': 'ok', 'register_error': f'添加{parent_category_name} 新类别 成功'})
-            except Exception as e:
-                return JsonResponse({'code': 'fail', 'register_error': '添加新类别 失败'})
-        else:
-            p_category_id = GoodsCategory.objects.get(name=parent_category_name, parent_id=None).id
-            s_category = GoodsCategory.objects.filter(name=second_category_name, parent_id=p_category_id)
-            if not s_category:
-                try:
-                    new_s_category = GoodsCategory.objects.create(name=second_category_name,parent_id=p_category_id)
-                    new_t_category = GoodsCategory.objects.create(name=third_category_name, parent_id=new_s_category.id)
-                    return JsonResponse({'code': 'ok', 'register_error': f'添加{second_category_name} 新类别 成功'})
-                except Exception as e:
-                    return JsonResponse({'code': 'fail', 'register_error': '添加新类别 失败'})
-            else:
-                s_category = GoodsCategory.objects.get(name=second_category_name, parent_id=p_category_id)
-                t_category = GoodsCategory.objects.filter(name=second_category_name, parent_id=s_category.id)
-                if not t_category:
-                    try:
-                        GoodsCategory.objects.create(name=third_category_name, parent_id=s_category.id)
-                        return JsonResponse({'code': 'ok', 'register_error': f'添加{third_category_name} 新类别 成功'})
-                    except Exception as e:
-                        return JsonResponse({'code': 'fail', 'register_error': '添加新类别 失败'})
+        #可能是二级或一级类别
+        if not cl2:
+            if not cl1:
+                #一级类别
+                if not GoodsCategory.objects.filter(name=catename, parent_id=None):
+                    GoodsCategory.objects.create(name=catename, parent_id=None)
+                    return JsonResponse({'code': 'ok', 'register_error': f'添加{catename} 一级类别 成功'})
                 else:
-                    return JsonResponse({'code': 'fail', 'register_error': '类别已存在'})
+                    return HttpResponseForbidden('该一级类别已存在')
+            else:
+                #二级类别
+                if not GoodsCategory.objects.filter(name=catename, parent_id=cl1):
+                    GoodsCategory.objects.create(name=catename, parent_id=cl1)
+                    return JsonResponse({'code': 'ok', 'register_error': f'添加{catename} 二级类别 成功'})
+                else:
+                    return HttpResponseForbidden('该二级类别已存在')
+        else:
+            #三级类别
+            if not cl1:
+                return HttpResponseForbidden('缺少必填类别')
+            else:
+                if not GoodsCategory.objects.filter(name=catename, parent_id=cl2):
+                    GoodsCategory.objects.create(name=catename,parent_id=cl2)
+                    return JsonResponse({'code': 'ok', 'register_error': f'添加{catename} 三级类别 成功'})
+                else:
+                    return HttpResponseForbidden('该三级类别已存在')
+
+
