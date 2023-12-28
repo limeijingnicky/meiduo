@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!--导入vue-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../../../static/jquery.min.js"></script>
+    <script src="../../../../static/jquery.simplePagination.js"></script>
+    <title>品牌管理</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 50%;
+            margin: auto;
+        }
+
+        th, td {
+            border: 1px solid #ddd; /* 设置表格整体边框样式 */
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            border-bottom: none; /* 移除表头底部边框 */
+        }
+        #tableContainer {
+            margin-bottom: 20px; /* 设置表格下方留出一定空间 */
+        }
+
+        #paginationContainer {
+            text-align: center; /* 居中显示分页控件 */
+
+        }
+        #pageDIV li{
+            display: inline-block; /* 设置分页器横向排列 */
+        }
+        #pageDIV span{
+            margin-right: 4px;
+        }
+        #pageDIV a {
+            margin-right: 4px;
+        }
+        #addbrand{
+            float:right;
+            margin-right:300px;
+        }
+        #brandModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #fff;
+            z-index: 1000;
+            border: 1px solid #ccc;
+            width: 400px;  /* 设置宽度 */
+            max-width: 60%;  /* 设置最大宽度 */
+            height: auto;  /* 让高度自适应内容 */
+            max-height: 60%;  /* 设置最大高度 */
+            overflow-y: auto;  /* 添加纵向滚动条 */
+        }
+
+        #brandModal input {
+            display: block;
+            margin-bottom: 10px;  /* 添加垂直间距 */
+            width: 60%;  /* 让输入框充满整个宽度 */
+        }
+
+        #brandModal button {
+            display: block;
+            margin-top: 10px;  /* 添加垂直间距 */
+            width: 20%;  /* 让输入框充满整个宽度 */
+        }
+
+         #brandModal2 {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #fff;
+            z-index: 1000;
+            border: 1px solid #ccc;
+            width: 400px;  /* 设置宽度 */
+            max-width: 60%;  /* 设置最大宽度 */
+            height: auto;  /* 让高度自适应内容 */
+            max-height: 60%;  /* 设置最大高度 */
+            overflow-y: auto;  /* 添加纵向滚动条 */
+        }
+
+        #brandModal2 input {
+            display: block;
+            margin-bottom: 10px;  /* 添加垂直间距 */
+            width: 60%;  /* 让输入框充满整个宽度 */
+        }
+
+        #brandModal2 button {
+            display: block;
+            margin-top: 10px;  /* 添加垂直间距 */
+            width: 20%;  /* 让输入框充满整个宽度 */
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+<div id="app">
+    <div id="login">
+        <div class="fr">
+            <div v-if="username" class="login_btn fl">
+                欢迎管理员：<em>[[ username]]</em>
+                <span>|</span>
+                <a @click="logoutAndClearLocalStorage()">退出</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebar">
+        <h2>品牌管理</h2>
+        <ul>
+            <li><a href="/admins/home/">管理首页</a></li>
+            <li><a href="/admins/user/1">用户管理</a></li>
+            <li><a href="/admins/spus/1">SPU管理</a></li>
+            <li><a href="/admins/specs/1">规格管理</a></li>
+            <li><a href="#">订单管理</a></li>
+            <li><a href="#">系统管理</a></li>
+        </ul>
+    </div>
+    <div>
+        <div id="specModal" style="display: none;">
+            <form>
+                <label for="specname">SPU规格名称:</label>
+                <input placeholder="规格名称1~20字符" type="text" id="specname" name="specname" required>
+
+                <label for="spuname">SPU商品名称:</label>
+                <input  placeholder="选择SPU商品名称" type="text" id="spuname" name="spuname" required>
+
+                <button type="button" @click="create_spec">Submit</button>
+            </form>
+        </div>
+
+        <div>
+        <div id="specModal2" style="display: none;">
+            <form>
+                <label for="specname2">SPU规格名称:</label>
+                <input placeholder="规格名称1~20字符" type="text" id="specname2" name="specname2" required>
+
+                <label for="spuname2">SPU商品名称:</label>
+                <input  placeholder="选择SPU商品名称" type="text" id="spuname2" name="spuname2" required>
+
+                <button type="button" @click="modify_spec">Submit</button>
+            </form>
+        </div>
+
+        <button id="addspec" @click="showModal">添加规格</button>
+
+        <button @click="show_all">查询所有SPU商品</button>
+        <br>
+        <br>
+        <input type="text" placeholder="请输入SPU商品名称" v-model="key">
+        <button @click="get_specname">搜索</button>
+
+
+        <table id="tableContainer">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>SPU_ID</th>
+                <th>SPU规格名称</th>
+                <th>SPU商品名称</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- 使用 Django 模板语法渲染数据 -->
+            {% for spec in page_specs %}
+            <tr>
+                <td>{{ spec.id }}</td>
+                <td>{{ spec.spuid }}</td>
+                <td>{{ spec.spuname }}</td>
+                <td>{{ spec.sname }}</td>
+                <td> <button @click="showModal2('{{ spec.spuname }}')">编辑</button>
+                    <button @click="delete_spec('{{ spec.spuname}}','{{spec.sname }}')">删除</button></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id="paginationContainer">
+        <!--设置分页-->
+        <div class="pagination" id="pageDIV"></div>
+    </div>
+</div>
+</body>
+
+<script type="text/javascript">
+    $(function() {
+        // 为具有指定选择器的元素设置分页
+        $('#pageDIV').pagination({
+            currentPage:{{page_num}},
+            pages:{{total_page}},
+            itemsOnPage:2,
+            prevText:'上一页',
+            nextText:'下一页',
+            cssStyle: 'light-theme',
+            onPageClick(getCurrentPage){
+                location.href='/admins/specs/'+getCurrentPage+'/'
+            },
+        })
+    });
+</script>
+
+<script>
+    const { createApp, ref } = Vue;
+
+    const app = createApp({
+        delimiters:['[[',']]'],
+        data() {
+            return {
+                username: "",
+                key:"",
+                selectedSpecname: null
+            };
+        },
+        mounted(){
+            let user=localStorage.username;
+            if (user==undefined)
+            {
+                window.location.href="/admins/login";
+            }else{
+                this.username=user;
+            };
+        },
+        methods: {
+            showModal() {
+                // 显示弹出框
+                const modal = document.getElementById('specModal');
+                modal.style.display = 'block';
+                modal.style.zIndex = '1000';  // 设置 z-index 使其在最上层
+                modal.style.border = '1px solid #ccc';  // 设置边框样式
+            },
+             showModal2(spuname) {
+                // 显示弹出框
+                const modal2 = document.getElementById('specModal2');
+                 this.selectedSpecname = spuname;
+                modal2.style.display = 'block';
+                modal2.style.zIndex = '1000';  // 设置 z-index 使其在最上层
+                modal2.style.border = '1px solid #ccc';  // 设置边框样式
+            },
+                 delete_spec(spuname,sname) {
+                // 显示弹出框
+//                 this.selectedSpecname = spuname;
+//                     this.selectedSpuname = sname;
+                     let token='JWT'+localStorage.token;
+                // 发送 Axios POST 请求，将用户信息传递给后端
+                axios.post('/admins/delete_spec/', {
+                    specname: spuname,
+                    spuname: sname
+                }, {
+                    headers:token,
+                    responseType:'json'
+                    })
+                    .then(response => {
+                    // 处理成功响应
+                    if(response.data.code=='ok'){
+                        alert(response.data.register_error)
+                         window.location.href='/admins/specs/1';
+                    }else{
+                     alert(response.data.register_error)
+                        window.location.href='/admins/specs/1';
+                    }
+                })
+                    .catch(error => {
+                    // 处理错误响应
+                    console.error(error);
+                });
+            },
+
+            create_spec(){
+                // 处理提交逻辑
+                const specname = document.getElementById('specname').value;
+                const spuname = document.getElementById('spuname').value;
+
+//                if (specnam && spuname){
+                 let token='JWT'+localStorage.token;
+                // 发送 Axios POST 请求，将用户信息传递给后端
+                axios.post('/admins/add_spec/', {
+                    specname: specname,
+                    spuname: spuname
+                }, {
+                    headers:token,
+                    responseType:'json'
+                    })
+                    .then(response => {
+                    // 处理成功响应
+                    if(response.data.code=='ok'){
+                        alert(response.data.register_error)
+                        // 关闭弹出框
+                        document.getElementById('specModal').style.display = 'none';
+                        window.location.href='/admins/specs/1';
+                    }else{
+                    alert(response.data.register_error)
+                        // 关闭弹出框
+                        document.getElementById('specModal').style.display = 'none';
+                        window.location.href='/admins/specs/1';
+                    }
+                })
+                    .catch(error => {
+                    // 处理错误响应
+                    console.error(error);
+                });
+//                };
+            },
+
+             modify_spec(){
+                // 处理提交逻辑
+                 const specnameb = this.selectedSpecname
+                const specname = document.getElementById('specname2').value;
+                const spuname = document.getElementById('spuname2').value;
+
+//                if (specnam && spuname){
+                 let token='JWT'+localStorage.token;
+                // 发送 Axios POST 请求，将用户信息传递给后端
+                axios.put('/admins/add_spec/', {
+                    specnameb: specnameb,
+                    specname: specname,
+                    spuname: spuname
+                }, {
+                    headers:token,
+                    responseType:'json'
+                    })
+                    .then(response => {
+                    // 处理成功响应
+                    if(response.data.code=='ok'){
+                        alert(response.data.register_error)
+                        // 关闭弹出框
+                        document.getElementById('specModal2').style.display = 'none';
+                        window.location.href='/admins/specs/1';
+                    }else{
+                     alert(response.data.register_error)
+                        // 关闭弹出框
+                        document.getElementById('specModal2').style.display = 'none';
+                        window.location.href='/admins/specs/1';
+                    }
+                })
+                    .catch(error => {
+                    // 处理错误响应
+                    console.error(error);
+                });
+//                };
+            },
+
+
+            get_specname(){
+                let url='/admins/specs/1/?keyword='+this.key;
+                let token='JWT'+localStorage.token;
+                axios.get(url,
+                    {headers:token}
+                )
+                    .then(response=>{
+                    window.location.href=url;
+                })
+                    .catch(error => {
+                    console.log(error);
+                });
+            },
+            show_all(){
+                let url='/admins/specs/1/';
+                let token='JWT'+localStorage.token;
+                axios.get(url,
+                    {headers:token}
+                )
+                    .then(response=>{
+                    window.location.href=url;
+                })
+                    .catch(error => {
+                    console.log(error);
+                });
+            },
+
+            logoutAndClearLocalStorage() {
+                // 清空 localStorage
+                localStorage.clear();
+                window.location.href="/admins/login";
+            },
+        },
+    });
+    app.mount("#app");
+</script>
+</html>
