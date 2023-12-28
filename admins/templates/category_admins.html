@@ -43,11 +43,11 @@
         #pageDIV a {
             margin-right: 4px;
         }
-        #addspu{
+        #addcate{
             float:right;
             margin-right:300px;
         }
-        #spuModal {
+        #cateModal {
             display: none;
             position: fixed;
             top: 50%;
@@ -64,19 +64,20 @@
             overflow-y: auto;  /* 添加纵向滚动条 */
         }
 
-        #spuModal input {
+        #cateModal input {
             display: block;
-            margin-bottom: 10px;  /* 添加垂直间距 */
+            margin-bottom: 5px;  /* 添加垂直间距 */
             width: 60%;  /* 让输入框充满整个宽度 */
+
         }
 
-        #spuModal button {
+        #cateModal button {
             display: block;
             margin-top: 10px;  /* 添加垂直间距 */
             width: 20%;  /* 让输入框充满整个宽度 */
         }
 
-         #spuModal2 {
+         #cateModal2 {
             display: none;
             position: fixed;
             top: 50%;
@@ -93,13 +94,13 @@
             overflow-y: auto;  /* 添加纵向滚动条 */
         }
 
-        #spuModal2 input {
+        #cateModal2 input {
             display: block;
             margin-bottom: 10px;  /* 添加垂直间距 */
             width: 60%;  /* 让输入框充满整个宽度 */
         }
 
-        #spuModal2 button {
+        #cateModal2 button {
             display: block;
             margin-top: 10px;  /* 添加垂直间距 */
             width: 20%;  /* 让输入框充满整个宽度 */
@@ -125,22 +126,22 @@
     <div id="sidebar">
         <h2>分类管理</h2>
         <ul>
-            <li><a href="/admins/home/">管理首页</a></li>
+             <li><a href="/admins/home/">管理首页</a></li>
             <li><a href="/admins/user/1">用户管理</a></li>
+            <li><a href="/admins/category/1">分类管理</a></li>
+            <li><a href="/admins/spus/1">SPU管理</a></li>
             <li><a href="/admins/specs/1">规格管理</a></li>
-            <li><a href="/admins/spus/1">SPU商品管理</a></li>
             <li><a href="#">订单管理</a></li>
             <li><a href="#">系统管理</a></li>
         </ul>
     </div>
     <div>
-        <div id="spuModal" style="display: none;">
+        <div id="cateModal" style="display: none;">
             <form>
-                <label for="spuname">SPU商品名称:</label>
-                <input  placeholder="SPU商品名称" type="text" id="spuname" name="spuname" required>
+                <label for="catename">类别名称:</label>
+                <input  placeholder="类别名称" type="text" id="catename" name="catename" required>
 
                 <div class="form_group">
-                    <label class="t">SPU商品：</label>
                     <select v-model="form_category.cl1_id">
                         <option value="">请选择一级分类</option>
                         <option v-for="c1 in cl1" :value="c1.id">[[ c1.name ]]</option>
@@ -149,24 +150,21 @@
                         <option value="">请选择二级分类</option>
                         <option v-for="c2 in cl2" :value="c2.id">[[ c2.name ]]</option>
                     </select>
-                    <select v-model="form_category.cl3_id">
-                        <option value="">请选择三级分类</option>
-                        <option v-for="c3 in cl3" :value="c3.id">[[ c3.name ]]</option>
-                    </select>
-                    <select v-model="form_category.brand_id">
-                        <option value="">请选择品牌</option>
-                        <option v-for="bran in brand" :value="bran.id">[[ bran.name ]]</option>
-                    </select>
+<!--                    <select v-model="form_category.cl3_id">-->
+<!--                        <option value="">请选择三级分类</option>-->
+<!--                        <option v-for="c3 in cl3" :value="c3.id">[[ c3.name ]]</option>-->
+<!--                    </select>-->
                 </div>
 
-                <button type="button" @click="create_spu">Submit</button>
+                <button type="button" @click="create_cate">Submit</button>
+                <button type="button" @click="cancelModal">取消</button>
             </form>
         </div>
 
         <div>
 
 
-        <button id="addspu" @click="showModal">添加新的类别</button>
+        <button id="addcate" @click="showModal">添加新的类别</button>
 
         <button @click="show_all">查询所有分类标签</button>
         <br>
@@ -194,8 +192,8 @@
                 <td>{{ categories.second_category_name }}</td>
                 <td>{{ categories.third_category_name }}</td>
 
-                <td> <button @click="showModal2('{{ spu.spuid }}')">编辑</button>
-                    <button @click="delete_categories('{{ spu.spuid }}')">删除</button></td>
+                <td> <button @click="showModal2('{{ categories.id }}')">编辑</button>
+                    <button @click="delete_categories('{{ categories.id }}')">删除</button></td>
             </tr>
             {% endfor %}
             </tbody>
@@ -221,7 +219,7 @@
             nextText:'下一页',
             cssStyle: 'light-theme',
             onPageClick(getCurrentPage){
-                location.href='/admins/category/'+getCurrentPage+'/'
+                location.href='/admins/category/'+getCurrentPage+'/?'+searchParams
             },
         })
     });
@@ -236,7 +234,7 @@
             return {
                 username: "",
                 key:"",
-                selectedSpuid: null,
+                selectedCateid: null,
                   form_category: {
                     cl1:'',
                     cl2:'',
@@ -258,6 +256,7 @@
             }else{
                 this.username=user;
             };
+            this.get_cl1();
         },
 
         watch:{
@@ -330,6 +329,11 @@
                     console.log(error);
                 });
             },
+             cancelModal() {
+                // 显示弹出框
+                  document.getElementById('cateModal').style.display = 'none';
+            },
+
              get_catename(){
                 let url='/admins/category/1/?keyword='+this.key;
                 let token='JWT'+localStorage.token;
@@ -342,6 +346,58 @@
                     .catch(error => {
                     console.log(error);
                 });
+            },
+             get_cl1(){
+                let url = '/admins/categories/?category_id=';
+                axios.get(url, {
+                    responseType: 'json'
+                })
+                    .then(response => {
+                    if (response.data.code == '0') {
+                        this.cl1 = response.data.category1_list;
+                    } else {
+                        console.log(error.response) ;
+                        this.cl1 = [];
+                    }
+                })
+                    .catch(error => {
+                    console.log(error.response) ;
+                    this.cl1 = [];
+                })
+            },
+
+             create_cate(){
+                // 处理提交逻辑
+                const catename = document.getElementById('catename').value;
+                 let token='JWT'+localStorage.token;
+                // 发送 Axios POST 请求，将用户信息传递给后端
+                axios.post('/admins/add_category/', {
+                    catename: catename,
+                    cl1: this.form_category.cl1_id,
+                    cl2: this.form_category.cl2_id,
+                }, {
+                    headers:token,
+                    responseType:'json'
+                    })
+                    .then(response => {
+                    // 处理成功响应
+                    if(response.data.code=='ok'){
+                        alert(response.data.register_error)
+                        // 关闭弹出框
+                        document.getElementById('cateModal').style.display = 'none';
+                        window.location.href='/admins/category/1';
+                    }else{
+                    alert(response.data.register_error)
+                        // 关闭弹出框
+                        document.getElementById('cateModal').style.display = 'none';
+                        window.location.href='/admins/category/1';
+                    }
+                })
+                    .catch(error => {
+                    // 处理错误响应
+                    console.error(error);
+                });
+//                };
             },
 
             logoutAndClearLocalStorage() {
