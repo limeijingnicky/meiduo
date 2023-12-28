@@ -96,6 +96,7 @@
         <h2>用户管理</h2>
         <ul>
             <li><a href="/admins/home/">管理首页</a></li>
+             <li><a href="/admins/category/1">分类管理</a></li>
             <li><a href="/admins/spus/1">SPU管理</a></li>
             <li><a href="/admins/specs/1">规格管理</a></li>
             <li><a href="#">订单管理</a></li>
@@ -121,6 +122,7 @@
                 <input  placeholder="输入手机号码" type="text" id="mobile" name="mobile" required>
 
                 <button type="button" @click="create_user">Submit</button>
+                <button type="button" @click="cancelModal">取消</button>
             </form>
         </div>
 
@@ -164,6 +166,7 @@
 
 <script type="text/javascript">
     $(function() {
+        const searchParams = new URLSearchParams(window.location.search)
         // 为具有指定选择器的元素设置分页
         $('#pageDIV').pagination({
             currentPage:{{page_num}},
@@ -173,7 +176,7 @@
             nextText:'下一页',
             cssStyle: 'light-theme',
             onPageClick(getCurrentPage){
-                location.href='/admins/user/'+getCurrentPage+'/'
+                location.href='/admins/user/'+getCurrentPage+'/?'+ searchParams.toString();
             },
         })
     });
@@ -246,7 +249,10 @@
                 });
                 };
             },
-
+            cancelModal() {
+                // 显示弹出框
+                  document.getElementById('userModal').style.display = 'none';
+            },
 
             get_username(){
                 let url='/admins/user/1/'+this.key;

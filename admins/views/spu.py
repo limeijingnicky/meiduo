@@ -27,8 +27,7 @@ class SpusView(View):
     def get(self,request,page_num,keyword):
         keyword=request.GET.get('keyword')
         page_num=page_num
-        # print(page_num)
-        # print(keyword)
+        print(f"'keyword':{keyword}")
 
         spuid=[]
          # 当不存在查询参数时，即返回所有规格信息
@@ -157,3 +156,28 @@ class SpusAddView(View):
                 return JsonResponse({'code': 'fail', 'register_error': '修改SPU商品 失败'})
         else:
             return JsonResponse({'code': 'fail', 'register_error': '此SPU商品名称已存在'})
+
+
+class SpusDeleteView(View):
+    # 权限认证
+    permission_classes = [IsAdminUser]
+    # 渲染器指定
+    renderer_classes = [JSONRenderer]
+
+    def post(self, request):
+        data = json.loads(request.body)
+        spuid = data.get('spuid')
+
+        # SPU商品要存在
+        spus = SPU.objects.filter(id=spuid)
+        if spus:
+            try:  # 返回一个对象 update用来批量更新数据，不返回对象。
+                spe = SPU.objects.get(id=spuid)
+                sname=spe.name
+                spe.delete()
+                return JsonResponse({'code': 'ok', 'register_error': f'删除{sname} SPU商品 成功'})
+
+            except DatabaseError:
+                return JsonResponse({'code': 'fail', 'register_error': '删除规格失败'})
+        else:
+            return JsonResponse({'code': 'fail', 'register_error': 'SPU商品不存在'})

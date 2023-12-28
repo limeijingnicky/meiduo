@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../../../../static/jquery.min.js"></script>
     <script src="../../../../static/jquery.simplePagination.js"></script>
-    <title>SPU管理</title>
+    <title>类别管理</title>
     <style>
         table {
             border-collapse: collapse;
@@ -123,11 +123,12 @@
     </div>
 
     <div id="sidebar">
-        <h2>SPU管理</h2>
+        <h2>分类管理</h2>
         <ul>
             <li><a href="/admins/home/">管理首页</a></li>
             <li><a href="/admins/user/1">用户管理</a></li>
             <li><a href="/admins/specs/1">规格管理</a></li>
+            <li><a href="/admins/spus/1">SPU商品管理</a></li>
             <li><a href="#">订单管理</a></li>
             <li><a href="#">系统管理</a></li>
         </ul>
@@ -165,38 +166,36 @@
         <div>
 
 
-        <button id="addspu" @click="showModal">添加SPU商品</button>
+        <button id="addspu" @click="showModal">添加新的类别</button>
 
-        <button @click="show_all">查询所有SPU商品</button>
+        <button @click="show_all">查询所有分类标签</button>
         <br>
         <br>
-        <input type="text" placeholder="请输入SPU商品名称" v-model="key">
-        <button @click="get_spuname">搜索</button>
+        <input type="text" placeholder="请输入分类标签名称" v-model="key">
+        <button @click="get_catename">搜索</button>
 
 
         <table id="tableContainer">
             <thead>
             <tr>
-                <th>SPU_ID</th>
-                <th>SPU商品名称</th>
-                <th>SPU商品描述</th>
-                <th>SPU商品简介</th>
-                <th>SPU商品服务</th>
+                <th>ID</th>
+                <th>一级分类标签名称</th>
+                <th>二级分类标签名称</th>
+                <th>三级分类标签名称</th>
                 <th>操作</th>
             </tr>
             </thead>
             <tbody>
             <!-- 使用 Django 模板语法渲染数据 -->
-            {% for spu in page_spus %}
+            {% for categories in page_categories %}
             <tr>
-                <td>{{ spu.spuid }}</td>
-                <td>{{ spu.spuname }}</td>
-                <td>{{ spu.spudetail }}</td>
-                <td>{{ spu.spupack }}</td>
-                <td>{{ spu.spuservice }}</td>
+                <td>{{ categories.id}}</td>
+                <td>{{ categories.first_category_name }}</td>
+                <td>{{ categories.second_category_name }}</td>
+                <td>{{ categories.third_category_name }}</td>
 
                 <td> <button @click="showModal2('{{ spu.spuid }}')">编辑</button>
-                    <button @click="delete_spu('{{ spu.spuid }}')">删除</button></td>
+                    <button @click="delete_categories('{{ spu.spuid }}')">删除</button></td>
             </tr>
             {% endfor %}
             </tbody>
@@ -210,18 +209,19 @@
 </body>
 
 <script type="text/javascript">
-//    let categories = {{category | safe}};
+
     $(function() {
+        const searchParams = new URLSearchParams(window.location.search);
         // 为具有指定选择器的元素设置分页
         $('#pageDIV').pagination({
             currentPage:{{page_num}},
             pages:{{total_page}},
-            itemsOnPage:2,
+            itemsOnPage:10,
             prevText:'上一页',
             nextText:'下一页',
             cssStyle: 'light-theme',
             onPageClick(getCurrentPage){
-                location.href='/admins/spus/'+getCurrentPage+'/'
+                location.href='/admins/category/'+getCurrentPage+'/'
             },
         })
     });
@@ -247,7 +247,7 @@
                 cl2: [],
                 cl3: [],
                 brand:[],
-//                form_category: JSON.parse(JSON.stringify(form_category))
+
             };
         },
         mounted(){
@@ -258,7 +258,6 @@
             }else{
                 this.username=user;
             };
-            this.get_cl1();
         },
 
         watch:{
@@ -309,38 +308,30 @@
 
 
         methods: {
-            get_cl1(){
-                let url = '/admins/categories/?category_id=';
-                axios.get(url, {
-                    responseType: 'json'
-                })
-                    .then(response => {
-                    if (response.data.code == '0') {
-                        this.cl1 = response.data.category1_list;
-                    } else {
-                        console.log(error.response) ;
-                        this.cl1 = [];
-                    }
-                })
-                    .catch(error => {
-                    console.log(error.response) ;
-                    this.cl1 = [];
-                })
-            },
-
 
             showModal() {
                 // 显示弹出框
-                const modal = document.getElementById('spuModal');
+                const modal = document.getElementById('cateModal');
                 modal.style.display = 'block';
                 modal.style.zIndex = '1000';  // 设置 z-index 使其在最上层
                 modal.style.border = '1px solid #ccc';  // 设置边框样式
             },
 
-
-
             show_all(){
-                let url='/admins/spus/1/';
+                let url='/admins/categories/1/';
+                let token='JWT'+localStorage.token;
+                axios.get(url,
+                    {headers:token}
+                )
+                    .then(response=>{
+                    window.location.href=url;
+                })
+                    .catch(error => {
+                    console.log(error);
+                });
+            },
+             get_catename(){
+                let url='/admins/category/1/?keyword='+this.key;
                 let token='JWT'+localStorage.token;
                 axios.get(url,
                     {headers:token}

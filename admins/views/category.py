@@ -103,63 +103,125 @@ class CategoryGetView(View):
                 })
 
 
-# class CategoryView(View):
-#     # 权限认证
-#     permission_classes = [IsAdminUser]
-#     # 渲染器指定
-#     renderer_classes = [JSONRenderer]
-#
-#     def get(self,request,page_num,keyword):
-#         keyword=request.GET.get('keyword')
-#         page_num=page_num
-#
-#
-#         categories=[]
-#          # 当不存在查询参数时，即返回所有规格信息
-#         if not keyword:
-#             #查询数据库中的一级分类对象
-#             cates = GoodsCategory.objects.filter(parent__isnull=True)
-#             #依次往下查询
-#             for cate in cates:
-#
-#
-#         else:
-#             cates = GoodsCategory.objects.filter(name__contains=keyword)
-#             if not cates:
-#                 return render(request,'category_admins.html', {'page_categories': categories})
-#
-#
-#         spuu=[]
-#         for spu in spus:
-#             spuu.append(
-#                 {
-#                     'spuid' : spu.id,
-#                     'spuname' : spu.name,
-#                     'spudetail' : spu.desc_detail,
-#                     'spupack': spu.desc_pack,
-#                     'spuservice': spu.desc_service
-#                 }
-#             )
-#         print(spuu)
-#
-#         paginator = Paginator(spuu, 2)
-#         total_page = paginator.num_pages
-#
-#         try:
-#             spuss = paginator.page(page_num)
-#         except EmptyPage:
-#             return HttpResponseNotFound('当前页面不存在')
-#
-#         context = {
-#             'page_spus': spuss,
-#             'total_page': total_page,
-#             'page_num': page_num,
-#         }
-#         # print(context)
-#         # 查询一个作者的所有书籍
-#         # author_instance = Author.objects.get(id=1)
-#         # books = author_instance.books.all()（books为Book模型中的关联字段，否则默认为book_set）
-#         return render(request,'spus_admins.html',context=context)
+class CategoryView(View):
+    # 权限认证
+    permission_classes = [IsAdminUser]
+    # 渲染器指定
+    renderer_classes = [JSONRenderer]
+
+    def get(self,request,page_num,keyword):
+        keyword=request.GET.get('keyword')
+        page_num=page_num
+        print(f"'keyword':{keyword}")
+
+        categories=[]
+         # 当不存在查询参数时，即返回所有规格信息
+        if not keyword:
+            #查询数据库中的一级分类对象
+            cates = GoodsCategory.objects.filter(parent__isnull=True)
+            #依次往下查询
+            for first_cate in cates:
+                categories.append({
+                    'id': first_cate.id,
+                    'third_category_name': "",
+                    'second_category_name': "",
+                    'first_category_name': first_cate.name
+                })
+                second_cates=GoodsCategory.objects.filter(parent_id=first_cate.id)
+                for second_cate in second_cates:
+                    categories.append({
+                        'id': second_cate.id,
+                        'third_category_name':"",
+                        'second_category_name': second_cate.name,
+                        'first_category_name': first_cate.name
+                    })
+                    third_cates=GoodsCategory.objects.filter(parent_id=second_cate.id)
+                    for third_cate in third_cates:
+                        categories.append({
+                            'id':third_cate.id,
+                            'third_category_name':third_cate.name,
+                            'second_category_name': second_cate.name,
+                            'first_category_name': first_cate.name
+                        })
+
+        else:
+            print(keyword)
+            cates = GoodsCategory.objects.filter(name__contains=keyword)
+
+            if not cates:
+                return render(request,'category_admins.html', {'page_categories': categories})
+
+            for cate in cates:
+                #应该往下找
+                if cate.parent_id is None:
+                    #该对象为一级标签
+                    second_cates=GoodsCategory.objects.filter(parent_id=cate.id)
+                    for second_cate in second_cates:
+                        tird_cates=GoodsCategory.objects.filter(parent_id=second_cate.id)
+                        for third_cate in tird_cates:
+                            categories.append(
+                                {
+                                    'id': third_cate.id,
+                                    'third_category_name': third_cate.name,
+                                    'second_category_name': second_cate.name,
+                                    'first_category_name': cate.name
+                                }
+                            )
+                # if cate.parent_id is None:
+                #     categories.append(
+                #         {
+                #             'id':cate.id,
+                #             'third_category_name':"",
+                #             'second_category_name':"",
+                #             'first_category_name':cate.name
+                #         }
+                #     )
+                else:
+                    #可能是二级标签，也可能是三级标签,要先判断
+                    parent_cate = GoodsCategory.objects.get(id=cate.parent_id)
+                    if parent_cate.parent_id is None:
+                        #二级标签
+                        third_cates=GoodsCategory.objects.filter(parent_id=parent_cate.id)
+                        for third_cate in third_cates:
+                            categories.append(
+                                {
+                                    'id': third_cate.id,
+                                    'third_category_name':third_cate.name,
+                                    'second_category_name': cate.name,
+                                    'first_category_name': parent_cate.name,
+                                }
+                            )
+                    else:
+                        #三级标签
+                        first_cate = GoodsCategory.objects.get(id=parent_cate.parent_id)
+                        categories.append(
+                            {
+                                'id': cate.id,
+                                'third_category_name': cate.name,
+                                'second_category_name':parent_cate.name,
+                                'first_category_name': first_cate.name
+                            }
+                        )
+
+
+        paginator = Paginator(categories, 10)
+        total_page = paginator.num_pages
+
+        try:
+            categoriess = paginator.page(page_num)
+        except EmptyPage:
+            return HttpResponseNotFound('当前页面不存在')
+
+        context = {
+            'page_categories': categoriess,
+            'total_page': total_page,
+            'page_num': page_num,
+        }
+        # print(context)
+        # 查询一个作者的所有书籍
+        # author_instance = Author.objects.get(id=1)
+        # books = author_instance.books.all()（books为Book模型中的关联字段，否则默认为book_set）
+        return render(request,'category_admins.html',context=context)
 
 class CategoryAddView(View):
     """
