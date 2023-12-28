@@ -14,6 +14,7 @@ from django.http import HttpResponseNotFound,HttpResponseForbidden,HttpResponse,
 import re
 from django.db import DatabaseError
 import json
+
 class UsersView(View):
     # 权限认证
     permission_classes = [IsAdminUser]
@@ -113,12 +114,15 @@ class UserAddView(View):
         if not re.match(r'^\w+@\w+\.\w+$', email):
             return HttpResponseForbidden('email格式不正确')
 
-        try:  # 返回一个对象
-            user = Users.objects.create_user(username=username, password=password, mobile=mobile,email=email)
-            return JsonResponse({'code': 'ok','register_error':f'添加ID{user.id} 用户 成功'})
+        #用户名和手机号不能重复
+        if not Users.objects.filter(username=username) and not Users.objects.filter(mobile=mobile):
+            try:  # 返回一个对象
+                user = Users.objects.create_user(username=username, password=password, mobile=mobile,email=email)
+                return JsonResponse({'code': 'ok','register_error':f'添加ID{user.id} 用户 成功'})
 
-        except DatabaseError:
-            return JsonResponse({'code': 'fail','register_error': '添加用户失败'})
-
+            except DatabaseError:
+                return JsonResponse({'code': 'fail','register_error': '添加用户失败'})
+        else:
+            return JsonResponse({'code': 'fail', 'register_error': '用户名或手机号已存在'})
 
 
