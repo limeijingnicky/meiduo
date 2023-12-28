@@ -126,6 +126,7 @@
         <h2>SPU管理</h2>
         <ul>
             <li><a href="/admins/home/">管理首页</a></li>
+             <li><a href="/admins/category/1">分类管理</a></li>
             <li><a href="/admins/user/1">用户管理</a></li>
             <li><a href="/admins/specs/1">规格管理</a></li>
             <li><a href="#">订单管理</a></li>
@@ -159,6 +160,7 @@
                 </div>
 
                 <button type="button" @click="create_spu">Submit</button>
+                <button type="button" @click="cancelModal">取消</button>
             </form>
         </div>
 
@@ -177,6 +179,7 @@
                 <input placeholder="SPU商品服务" type="text" id="spuservice" name="spuservice" required>
 
                 <button type="button" @click="modify_spu">Submit</button>
+                <button type="button" @click="cancelModal2">取消</button>
             </form>
         </div>
 
@@ -228,8 +231,8 @@
 </body>
 
 <script type="text/javascript">
-//    let categories = {{category | safe}};
     $(function() {
+        const searchParams = new URLSearchParams(window.location.search);
         // 为具有指定选择器的元素设置分页
         $('#pageDIV').pagination({
             currentPage:{{page_num}},
@@ -239,7 +242,7 @@
             nextText:'下一页',
             cssStyle: 'light-theme',
             onPageClick(getCurrentPage){
-                location.href='/admins/spus/'+getCurrentPage+'/'
+                location.href='/admins/spus/'+getCurrentPage+'/?'+searchParams.toString();
             },
         })
     });
@@ -255,6 +258,7 @@
                 username: "",
                 key:"",
                 selectedSpuname: null,
+                makesuredelete: false,
                   form_category: {
                     cl1:'',
                     cl2:'',
@@ -394,6 +398,14 @@
                 modal.style.zIndex = '1000';  // 设置 z-index 使其在最上层
                 modal.style.border = '1px solid #ccc';  // 设置边框样式
             },
+             cancelModal() {
+                // 显示弹出框
+                  document.getElementById('spuModal').style.display = 'none';
+            },
+             cancelModal2() {
+                // 显示弹出框
+                  document.getElementById('spuModal2').style.display = 'none';
+            },
 
              showModal2(spuname) {
                 // 显示弹出框
@@ -417,7 +429,22 @@
                     console.log(error);
                 });
             },
-
+            makesuredelete(){
+//            增加一个确定删除的逻辑
+            },
+            get_spuname(){
+                 let url='/admins/spus/1/?keyword='+this.key;
+                let token='JWT'+localStorage.token;
+                axios.get(url,
+                    {headers:token}
+                )
+                    .then(response=>{
+                    window.location.href=url;
+                })
+                    .catch(error => {
+                    console.log(error);
+                });
+            },
             create_spu(){
                 // 处理提交逻辑
                 const spuname = document.getElementById('spuname').value;
@@ -493,6 +520,36 @@
                     console.error(error);
                 });
 //                };
+            },
+
+                  delete_spu(spuid) {
+                // 显示弹出框
+                this.makesuredelete();
+                      let token='JWT'+localStorage.token;
+                // 发送 Axios POST 请求，将用户信息传递给后端
+                      if (this.makesured == true){
+                       axios.post('/admins/delete_spu/', {
+                    spuid: spuid
+                }, {
+                    headers:token,
+                    responseType:'json'
+                    })
+                    .then(response => {
+                    // 处理成功响应
+                    if(response.data.code=='ok'){
+                        alert(response.data.register_error)
+                         window.location.href='/admins/spus/1';
+                    }else{
+                     alert(response.data.register_error)
+                        window.location.href='/admins/spus/1';
+                    }
+                })
+                    .catch(error => {
+                    // 处理错误响应
+                    console.error(error);
+                });
+                      }
+
             },
 
             logoutAndClearLocalStorage() {
