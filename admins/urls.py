@@ -8,6 +8,21 @@ from admins.views.spec import SpecsView,SpecsAddView,SpecsDeleteView
 from admins.views.spu import SpusView,SpusAddView,SpusDeleteView
 from admins.views.category import CategoryGetView,CategoryAddView,CategoryView
 from admins.views.brand import BrandGetView
+
+
+# #如何调用日志
+# import logging
+# logger = logging.getLogger('meiduo')
+# # logger.debug('Debug message'): 记录 DEBUG 级别的消息。
+# # logger.warning('Warning message'): 记录 WARNING 级别的消息。
+# # logger.error('Error message'): 记录 ERROR 级别的消息。
+# # logger.critical('Critical message'): 记录 CRITICAL 级别的消息。
+# #配合需要，记录下对应的信息。
+# #except Exception as e:
+#     # # 记录 ERROR 级别的消息
+#         logger.error(str(e))
+
+
 urlpatterns = [
     re_path(r'^authorizations/$', obtain_jwt_token, name='authorization'),
     re_path(r'^login/$',LoginAdminsView.as_view(), name='login_admins'),
@@ -37,3 +52,9 @@ urlpatterns = [
     re_path(r'^add_category/$', CategoryAddView.as_view(), name='add_category_admins'),
 
 ]
+
+
+
+
+
+
