@@ -337,7 +337,6 @@ EMAIL_VERIFY_URL='http://127.0.0.1:8000/verification/'
 #重写storage的url
 DEFAULT_FILE_STORAGE = 'fastdfs.myst.MyStorage'
 
-
 HAYSTACK_CONNECTIONS={
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
