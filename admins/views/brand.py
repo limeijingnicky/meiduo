@@ -17,6 +17,11 @@ from goods.models import SPU,SPUSpecification
 import json
 from views.spec import chinese_len
 from django.core.cache import cache
+import logging
+
+#创建日志输出
+logger=logging.getLogger('meiduo')
+
 
 class BrandView(View):
     # 权限认证

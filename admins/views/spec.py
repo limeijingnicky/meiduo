@@ -15,6 +15,11 @@ import re
 from django.db import DatabaseError
 from goods.models import SPU,SPUSpecification
 import json
+import logging
+
+
+#创建日志输出
+logger=logging.getLogger('meiduo')
 
 
 class SpecsView(View):
@@ -78,6 +83,7 @@ class SpecsView(View):
         # 查询一个作者的所有书籍
         # author_instance = Author.objects.get(id=1)
         # books = author_instance.books.all()（books为Book模型中的关联字段，否则默认为book_set）
+        logger.info(f'success context in specs_admins:{specs}')
         return render(request,'specs_admins.html',context=context)
 
 
