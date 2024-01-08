@@ -12,8 +12,8 @@ import re
 from django_redis import get_redis_connection
 from users.models import Users
 
-#创建日志输出器
-logger=logging.getLogger('django')
+# #创建日志输出器
+# logger=logging.getLogger('django')
 
 
 
